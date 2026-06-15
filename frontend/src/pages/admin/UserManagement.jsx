@@ -1,94 +1,157 @@
-import { useEffect, useState } from 'react';
-import api from '../../api/axios';
-import { useAuth } from '../../context/AuthContext';
+import { useState, useEffect } from 'react'
+import Navbar from '../../components/Navbar'
+import Sidebar from '../../components/Sidebar'
+import { useAuth } from '../../context/AuthContext'
+import api from '../../api/axios'
 
-export default function UserManagement() {
-  const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState([]);
-  const [roles, setRoles] = useState([]);
-  const [loading, setLoading] = useState(true);
+const UserManagement = () => {
+  const { user: currentUser } = useAuth()
+  const [users, setUsers] = useState([])
+  const [roles, setRoles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [message, setMessage] = useState({ text: '', type: '' })
+  const [updatingId, setUpdatingId] = useState(null)
+  const [deletingId, setDeletingId] = useState(null)
 
-  useEffect(() => {
-    Promise.all([api.get('/api/users'), api.get('/api/roles')])
-      .then(([usersRes, rolesRes]) => {
-        setUsers(usersRes.data);
-        setRoles(rolesRes.data);
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  useEffect(() => { fetchData() }, [])
+
+  const fetchData = async () => {
+    try {
+      const [usersRes, rolesRes] = await Promise.all([
+        api.get('/api/users'),
+        api.get('/api/roles'),
+      ])
+      setUsers(usersRes.data)
+      setRoles(rolesRes.data)
+    } catch (err) {
+      console.error('Fetch data error:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleRoleChange = async (userId, roleId) => {
+    setUpdatingId(userId)
+    setMessage({ text: '', type: '' })
     try {
-      const res = await api.put(`/api/users/${userId}/role`, { roleId });
-      setUsers((prev) => prev.map((u) => u._id === userId ? { ...u, role: res.data.role } : u));
+      await api.put(`/api/users/${userId}/role`, { roleId })
+      setMessage({ text: 'อัพเดต Role สำเร็จ', type: 'success' })
+      fetchData()
     } catch (err) {
-      alert(err.response?.data?.message || 'เกิดข้อผิดพลาด');
+      setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    } finally {
+      setUpdatingId(null)
     }
-  };
+  }
 
   const handleDelete = async (userId) => {
-    if (!confirm('ต้องการลบผู้ใช้นี้?')) return;
+    if (!window.confirm('ต้องการลบผู้ใช้นี้หรือไม่?')) return
+    setDeletingId(userId)
+    setMessage({ text: '', type: '' })
     try {
-      await api.delete(`/api/users/${userId}`);
-      setUsers((prev) => prev.filter((u) => u._id !== userId));
+      await api.delete(`/api/users/${userId}`)
+      setMessage({ text: 'ลบผู้ใช้สำเร็จ', type: 'success' })
+      fetchData()
     } catch (err) {
-      alert(err.response?.data?.message || 'เกิดข้อผิดพลาด');
+      setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    } finally {
+      setDeletingId(null)
     }
-  };
+  }
 
-  if (loading) return <div className="text-center py-20 text-gray-500">กำลังโหลด...</div>;
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-'
+    return new Date(dateStr).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">จัดการผู้ใช้งาน</h2>
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-100">
-            <tr>
-              <th className="text-left px-6 py-3 font-medium text-gray-600">ผู้ใช้งาน</th>
-              <th className="text-left px-6 py-3 font-medium text-gray-600">Role</th>
-              <th className="text-left px-6 py-3 font-medium text-gray-600">วันที่สมัคร</th>
-              <th className="text-left px-6 py-3 font-medium text-gray-600">การดำเนินการ</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {users.map((u) => (
-              <tr key={u._id} className="hover:bg-gray-50">
-                <td className="px-6 py-4">
-                  <p className="font-medium text-gray-800">{u.name}</p>
-                  <p className="text-gray-400 text-xs">{u.email}</p>
-                </td>
-                <td className="px-6 py-4">
-                  <select
-                    value={u.role?._id || ''}
-                    onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                    disabled={u._id === currentUser?._id}
-                    className="border border-gray-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:bg-gray-50"
-                  >
-                    {roles.map((role) => (
-                      <option key={role._id} value={role._id}>{role.displayName}</option>
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1 p-8">
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">จัดการผู้ใช้</h1>
+            <p className="text-gray-500 mt-1">ทั้งหมด {users.length} คน</p>
+          </div>
+
+          {message.text && (
+            <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+              {message.text}
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center h-48">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ชื่อ</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">อีเมล</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Role</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">วันที่สมัคร</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">การดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {users.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center text-gray-500">ยังไม่มีผู้ใช้</td>
+                      </tr>
+                    ) : users.map((user) => (
+                      <tr key={user._id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-gray-800">{user.name}</div>
+                          {user._id === currentUser?._id && (
+                            <span className="text-xs text-blue-500">(บัญชีของคุณ)</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
+                        <td className="px-6 py-4">
+                          <select
+                            value={user.role?._id || ''}
+                            onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                            disabled={updatingId === user._id || user._id === currentUser?._id}
+                            className="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {roles.map((role) => (
+                              <option key={role._id} value={role._id}>
+                                {role.displayName}
+                              </option>
+                            ))}
+                          </select>
+                          {updatingId === user._id && (
+                            <span className="ml-2 text-xs text-blue-500">กำลังอัพเดต...</span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{formatDate(user.createdAt)}</td>
+                        <td className="px-6 py-4">
+                          {user._id !== currentUser?._id && (
+                            <button
+                              onClick={() => handleDelete(user._id)}
+                              disabled={deletingId === user._id}
+                              className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                            >
+                              {deletingId === user._id ? 'กำลังลบ...' : 'ลบ'}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
                     ))}
-                  </select>
-                </td>
-                <td className="px-6 py-4 text-gray-600">
-                  {new Date(u.createdAt).toLocaleDateString('th-TH')}
-                </td>
-                <td className="px-6 py-4">
-                  {u._id !== currentUser?._id && (
-                    <button
-                      onClick={() => handleDelete(u._id)}
-                      className="text-xs bg-red-100 hover:bg-red-200 text-red-700 px-3 py-1.5 rounded-lg"
-                    >
-                      ลบ
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </main>
       </div>
     </div>
-  );
+  )
 }
+
+export default UserManagement
