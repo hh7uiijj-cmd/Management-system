@@ -15,12 +15,18 @@ const CircularProgress = ({ percent, size = 180, strokeWidth = 14 }) => {
           stroke="#e5e7eb"
           strokeWidth={strokeWidth}
         />
+        <defs>
+          <linearGradient id="circularProgressGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#6366f1" />
+            <stop offset="100%" stopColor="#9333ea" />
+          </linearGradient>
+        </defs>
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="#2563eb"
+          stroke="url(#circularProgressGradient)"
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}

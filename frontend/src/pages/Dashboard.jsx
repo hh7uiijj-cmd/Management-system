@@ -6,13 +6,63 @@ import CircularProgress from '../components/CircularProgress'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 
-const MiniStat = ({ label, value, sub, color = 'text-gray-800' }) => (
-  <div className="card p-4">
-    <p className="text-xs font-medium text-gray-500">{label}</p>
-    <p className={`text-2xl font-bold mt-1 ${color}`}>{value}</p>
-    {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
-  </div>
-)
+const TONES = {
+  purple: { bg: 'bg-gradient-to-br from-indigo-50 to-purple-50', iconBg: 'bg-indigo-500', text: 'text-indigo-700' },
+  blue: { bg: 'bg-gradient-to-br from-sky-50 to-blue-50', iconBg: 'bg-blue-500', text: 'text-blue-700' },
+  green: { bg: 'bg-gradient-to-br from-emerald-50 to-green-50', iconBg: 'bg-emerald-500', text: 'text-emerald-700' },
+  amber: { bg: 'bg-gradient-to-br from-amber-50 to-yellow-50', iconBg: 'bg-amber-500', text: 'text-amber-700' },
+  rose: { bg: 'bg-gradient-to-br from-rose-50 to-pink-50', iconBg: 'bg-rose-500', text: 'text-rose-700' },
+  gray: { bg: 'bg-white', iconBg: 'bg-gray-400', text: 'text-gray-800' },
+}
+
+const MiniStat = ({ label, value, sub, tone = 'gray', icon }) => {
+  const t = TONES[tone] || TONES.gray
+  return (
+    <div className={`card p-4 ${t.bg} border-0`}>
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs font-medium text-gray-500">{label}</p>
+          <p className={`text-2xl font-bold mt-1 ${t.text}`}>{value}</p>
+          {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
+        </div>
+        {icon && (
+          <div className={`w-9 h-9 rounded-xl ${t.iconBg} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+            {icon}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const iconClass = 'w-4.5 h-4.5 text-white'
+const Icons = {
+  list: (
+    <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+    </svg>
+  ),
+  clock: (
+    <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  flag: (
+    <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21V4a1 1 0 011-1h11l-1 5 1 5H5a1 1 0 01-1-1z" />
+    </svg>
+  ),
+  check: (
+    <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+    </svg>
+  ),
+  bell: (
+    <svg className={iconClass} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+    </svg>
+  ),
+}
 
 const EmptyRow = ({ children }) => (
   <p className="text-gray-500 text-sm text-center py-8">{children}</p>
@@ -148,35 +198,35 @@ const Dashboard = () => {
 
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
           ) : (
             <>
               {/* PROJECT OVERVIEW */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-                <MiniStat label="งานทั้งหมด" value={totalTasks} />
-                <MiniStat label="กำลังดำเนินการ" value={inProgressTasks} color="text-blue-600" />
-                <MiniStat label="ล่าช้า / เลยกำหนด" value={overdueTasks} color="text-red-600" />
-                <MiniStat label="ใกล้ถึงกำหนด 0-3 วัน" value={upcomingTasks.length} color="text-orange-600" />
-                <MiniStat label="งานเสร็จสิ้น" value={completedTasks} color="text-green-600" />
-                <MiniStat label="เอกสารรออนุมัติ" value={pendingDocuments.length} color="text-purple-600" />
-                <MiniStat label="หนังสือรอตอบรับ" value={pendingLetters.length} color="text-purple-600" />
-                <MiniStat label="ปัญหา/ความเสี่ยงค้าง" value={openRisks.length} color="text-red-600" />
-                <MiniStat label="งานเสร็จแต่ขาดหลักฐาน" value={tasksMissingEvidence} color="text-yellow-600" />
+                <MiniStat label="งานทั้งหมด" value={totalTasks} tone="purple" icon={Icons.list} />
+                <MiniStat label="กำลังดำเนินการ" value={inProgressTasks} tone="blue" icon={Icons.clock} />
+                <MiniStat label="ล่าช้า / เลยกำหนด" value={overdueTasks} tone="rose" icon={Icons.flag} />
+                <MiniStat label="ใกล้ถึงกำหนด 0-3 วัน" value={upcomingTasks.length} tone="amber" icon={Icons.bell} />
+                <MiniStat label="งานเสร็จสิ้น" value={completedTasks} tone="green" icon={Icons.check} />
+                <MiniStat label="เอกสารรออนุมัติ" value={pendingDocuments.length} tone="purple" />
+                <MiniStat label="หนังสือรอตอบรับ" value={pendingLetters.length} tone="purple" />
+                <MiniStat label="ปัญหา/ความเสี่ยงค้าง" value={openRisks.length} tone="rose" />
+                <MiniStat label="งานเสร็จแต่ขาดหลักฐาน" value={tasksMissingEvidence} tone="amber" />
                 <MiniStat
                   label="งบประมาณตั้งต้นรวม"
                   value={`${formatMoney(totalInitialBudget)} บาท`}
-                  color="text-blue-600"
+                  tone="blue"
                 />
                 <MiniStat
                   label="ค่าใช้จ่ายจริงรวม"
                   value={`${formatMoney(totalActualCost)} บาท`}
-                  color="text-red-600"
+                  tone="rose"
                 />
                 {registrationStats && (
                   <>
-                    <MiniStat label="ผู้ลงทะเบียนรวม" value={registrationStats.total} color="text-blue-600" />
-                    <MiniStat label="เช็คอินแล้ว" value={registrationStats.checkedIn} color="text-green-600" />
+                    <MiniStat label="ผู้ลงทะเบียนรวม" value={registrationStats.total} tone="blue" />
+                    <MiniStat label="เช็คอินแล้ว" value={registrationStats.checkedIn} tone="green" />
                   </>
                 )}
               </div>
@@ -223,7 +273,7 @@ const Dashboard = () => {
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2 mt-2">
                       <div
-                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        className="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all"
                         style={{ width: `${totalTasks ? (completedTasks / totalTasks) * 100 : 0}%` }}
                       />
                     </div>
@@ -306,7 +356,7 @@ const Dashboard = () => {
                           <tr key={row.department} className="border-b border-gray-50 last:border-0">
                             <td className="py-3 pr-4 font-medium text-gray-800">{row.department}</td>
                             <td className="py-3 px-4">{row.total}</td>
-                            <td className="py-3 px-4 text-blue-600">{row.inProgress}</td>
+                            <td className="py-3 px-4 text-indigo-600">{row.inProgress}</td>
                             <td className="py-3 px-4 text-green-600">{row.completed}</td>
                             <td className="py-3 px-4 text-red-600">{row.overdue}</td>
                             <td className="py-3 pl-4">
@@ -324,7 +374,7 @@ const Dashboard = () => {
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-800">กิจกรรมล่าสุด</h2>
-                  <Link to="/events" className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                  <Link to="/events" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
                     ดูทั้งหมด →
                   </Link>
                 </div>
