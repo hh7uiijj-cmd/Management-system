@@ -6,6 +6,7 @@ import { PositionBadge } from '../../components/PositionBadge'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/axios'
 import { DEPARTMENTS, MEMBER_WORK_STATUSES } from '../../constants'
+import { getPositionRank } from '../../utils/badgeColors'
 
 // MEMBER (M) — ทะเบียนสมาชิก จัดการได้เฉพาะ admin/president/vice_president/head/เลขา
 const Members = () => {
@@ -20,6 +21,23 @@ const Members = () => {
 
   const isTopTier = ['admin', 'president', 'vice_president'].includes(user?.role?.name)
   const canManage = isTopTier || ['head', 'secretary'].includes(user?.role?.name)
+
+  // ประธานโครงการ/รองประธาน ขึ้นบนสุดเสมอ ที่เหลือจัดกลุ่มตามฝ่าย (ตามลำดับ DEPARTMENTS)
+  // แล้วในแต่ละฝ่ายเรียงหัวหน้าก่อนเลขา ก่อนสมาชิก
+  const sortedMembers = [...members].sort((a, b) => {
+    const rankA = getPositionRank(a.position)
+    const rankB = getPositionRank(b.position)
+    const isTopA = rankA <= 1
+    const isTopB = rankB <= 1
+    if (isTopA !== isTopB) return isTopA ? -1 : 1
+    if (!isTopA) {
+      const deptIdxA = DEPARTMENTS.indexOf(a.department)
+      const deptIdxB = DEPARTMENTS.indexOf(b.department)
+      if (deptIdxA !== deptIdxB) return deptIdxA - deptIdxB
+    }
+    if (rankA !== rankB) return rankA - rankB
+    return (a.name || '').localeCompare(b.name || '', 'th')
+  })
 
   useEffect(() => { fetchMembers() }, [])
 
@@ -169,9 +187,9 @@ const Members = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {members.length === 0 ? (
+                    {sortedMembers.length === 0 ? (
                       <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500">ยังไม่มีข้อมูลสมาชิก</td></tr>
-                    ) : members.map((m) => (
+                    ) : sortedMembers.map((m) => (
                       <tr key={m._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-800">{m.name}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{m.nickname || '-'}</td>

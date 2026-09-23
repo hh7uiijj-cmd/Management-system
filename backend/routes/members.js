@@ -2,11 +2,10 @@ const express = require('express');
 const router = express.Router();
 const Member = require('../models/Member');
 const auth = require('../middleware/auth');
-const { departmentFilter } = require('../middleware/moduleAccess');
 const { logAudit } = require('../utils/audit');
 
-// MEMBER (M) — ทะเบียนสมาชิก ดูแลโดย admin/president/vice_president/head/เลขา เท่านั้น
-// (สมาชิกทั่วไปดูได้เฉพาะทะเบียนของฝ่ายตัวเอง แก้ไข/เพิ่ม/ลบไม่ได้ เนื่องจากเป็นข้อมูลบุคคลของทั้งฝ่าย ไม่ใช่ของตัวเอง)
+// MEMBER (M) — ทะเบียนสมาชิก ดูได้ทุกฝ่ายไม่จำกัด (ทะเบียนรวมทั้งโครงการ)
+// แก้ไข/เพิ่ม/ลบ ดูแลโดย admin/president/vice_president/head/เลขา เท่านั้น
 const canManage = (req) => {
   const role = req.user.role?.name;
   return role === 'admin' || ['president', 'vice_president', 'head', 'secretary'].includes(role);
@@ -14,7 +13,7 @@ const canManage = (req) => {
 
 router.get('/', auth, async (req, res) => {
   try {
-    const members = await Member.find(departmentFilter(req)).sort({ department: 1, name: 1 });
+    const members = await Member.find({}).sort({ department: 1, name: 1 });
     res.json(members);
   } catch (error) {
     console.error('Get members error:', error);

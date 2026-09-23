@@ -27,16 +27,27 @@ const DEFAULT_ROLE_COLOR = { bg: 'bg-gray-100', text: 'text-gray-600' }
 export const getRoleTierColor = (roleName) => ROLE_TIER_COLORS[roleName] || DEFAULT_ROLE_COLOR
 
 // สีตามตำแหน่ง/บทบาทที่เป็นข้อความอิสระ (Member.position เช่น "ประธานโครงการ", "หัวหน้า")
-const POSITION_KEYWORD_COLORS = [
-  { test: (p) => p.includes('ประธานโครงการ') && !p.includes('รอง'), ...ROLE_TIER_COLORS.president },
-  { test: (p) => p.includes('รองประธาน'), ...ROLE_TIER_COLORS.vice_president },
-  { test: (p) => p.includes('หัวหน้า'), ...ROLE_TIER_COLORS.head },
-  { test: (p) => p.includes('เลขา'), ...ROLE_TIER_COLORS.secretary },
-  { test: (p) => p.includes('สมาชิก'), ...ROLE_TIER_COLORS.member },
+// ลำดับ rank ต่ำ = แสดงก่อน ใช้ทั้งเรียงสีและเรียงลำดับแถวในทะเบียนสมาชิก
+const POSITION_KEYWORD_RANKS = [
+  { test: (p) => p.includes('ประธานโครงการ') && !p.includes('รอง'), rank: 0, ...ROLE_TIER_COLORS.president },
+  { test: (p) => p.includes('รองประธาน'), rank: 1, ...ROLE_TIER_COLORS.vice_president },
+  { test: (p) => p.includes('หัวหน้า'), rank: 2, ...ROLE_TIER_COLORS.head },
+  { test: (p) => p.includes('เลขา'), rank: 3, ...ROLE_TIER_COLORS.secretary },
+  { test: (p) => p.includes('สมาชิก'), rank: 4, ...ROLE_TIER_COLORS.member },
 ]
+const DEFAULT_POSITION_RANK = 5
+
+const matchPosition = (position) => {
+  const p = (position || '').trim()
+  return POSITION_KEYWORD_RANKS.find((k) => k.test(p))
+}
 
 export const getPositionColor = (position) => {
-  const p = (position || '').trim()
-  const match = POSITION_KEYWORD_COLORS.find((k) => k.test(p))
+  const match = matchPosition(position)
   return match ? { bg: match.bg, text: match.text } : DEFAULT_ROLE_COLOR
+}
+
+export const getPositionRank = (position) => {
+  const match = matchPosition(position)
+  return match ? match.rank : DEFAULT_POSITION_RANK
 }
