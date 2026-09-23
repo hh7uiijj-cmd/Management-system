@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '../../components/Navbar'
 import Sidebar from '../../components/Sidebar'
+import SearchMultiSelect from '../../components/SearchMultiSelect'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/axios'
 
@@ -169,16 +170,11 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
     }
     if (f.type === 'multiref') {
       return (
-        <select
-          multiple
-          className="input-field h-28"
+        <SearchMultiSelect
+          options={options}
           value={form[f.name] || []}
-          onChange={(e) => handleChange(f.name, Array.from(e.target.selectedOptions).map((o) => o.value))}
-        >
-          {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
-          ))}
-        </select>
+          onChange={(next) => handleChange(f.name, next)}
+        />
       )
     }
     if (f.type === 'textarea') {
@@ -326,7 +322,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
               <h2 className="font-semibold text-gray-800 mb-4">{editingId ? 'แก้ไขรายการ' : 'เพิ่มรายการใหม่'}</h2>
               <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {fields.filter((f) => !f.visible || f.visible(user)).map((f) => (
-                  <div key={f.name} className={f.type === 'textarea' ? 'md:col-span-2' : ''}>
+                  <div key={f.name} className={['textarea', 'multiref'].includes(f.type) ? 'md:col-span-2' : ''}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
                     {renderFieldInput(f)}
                   </div>

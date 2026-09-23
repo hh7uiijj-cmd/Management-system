@@ -27,6 +27,15 @@ const taskMasterSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
+  reviewer: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  },
+  startDate: {
+    type: Date,
+    default: null,
+  },
   deadline: {
     type: Date,
     required: true,
