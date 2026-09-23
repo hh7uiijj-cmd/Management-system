@@ -84,12 +84,6 @@ const Login = () => {
             ) : 'เข้าสู่ระบบ'}
           </button>
         </form>
-
-        <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500 font-medium mb-2">บัญชีสำหรับทดสอบ (หลัง npm run seed):</p>
-          <p className="text-xs text-gray-600">Admin: admin@system.com / admin1234</p>
-          <p className="text-xs text-gray-600">สมาชิกทุกคน: u67110110553&lt;รหัส 3 หลัก&gt;@gmail.com / &lt;รหัส 3 หลัก&gt;</p>
-        </div>
       </div>
     </div>
   )
