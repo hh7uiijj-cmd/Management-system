@@ -29,6 +29,15 @@ const Documents = () => (
     canApprove
     approveField="approvalStatus"
     approveOptions={DOCUMENT_APPROVAL_STATUSES}
+    searchKeys={['title', 'department']}
+    filters={[
+      { key: 'category', label: 'หมวดหมู่', options: DOCUMENT_CATEGORIES },
+      { key: 'approvalStatus', label: 'สถานะ', options: DOCUMENT_APPROVAL_STATUSES },
+    ]}
+    sorts={[
+      { key: 'createdAt', label: 'วันที่สร้าง', defaultDir: 'desc' },
+      { key: 'title', label: 'ชื่อเอกสาร', defaultDir: 'asc' },
+    ]}
   />
 )
 

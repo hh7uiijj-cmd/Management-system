@@ -25,7 +25,18 @@ const columns = [
 ]
 
 const Letters = () => (
-  <ModulePage title="หนังสือราชการ (Letter Tracker)" endpoint="/api/letters" fields={fields} columns={columns} />
+  <ModulePage
+    title="หนังสือราชการ (Letter Tracker)"
+    endpoint="/api/letters"
+    fields={fields}
+    columns={columns}
+    searchKeys={['letterNumber', 'subject', 'sentTo', 'department']}
+    filters={[{ key: 'status', label: 'สถานะตอบกลับ', options: LETTER_STATUSES }]}
+    sorts={[
+      { key: 'dueDate', label: 'กำหนดตอบกลับ', defaultDir: 'asc' },
+      { key: 'createdAt', label: 'วันที่หนังสือ', defaultDir: 'desc' },
+    ]}
+  />
 )
 
 export default Letters

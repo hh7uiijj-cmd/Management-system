@@ -13,7 +13,9 @@ const emptyFromFields = (fields) => {
   return obj
 }
 
-const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', allowEdit = true }) => {
+const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
+
+const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -22,6 +24,11 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyFromFields(fields))
   const [saving, setSaving] = useState(false)
+
+  const [search, setSearch] = useState('')
+  const [filterValues, setFilterValues] = useState({})
+  const [sortKey, setSortKey] = useState(sorts[0]?.key || '')
+  const [sortDir, setSortDir] = useState(sorts[0]?.defaultDir || 'desc')
 
   const isTopTier = ['admin', 'president', 'vice_president'].includes(user?.role?.name)
   const isDeptLead = ['head', 'secretary'].includes(user?.role?.name)
@@ -195,6 +202,34 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
     )
   }
 
+  const resetFilters = () => {
+    setSearch('')
+    setFilterValues({})
+    setSortKey(sorts[0]?.key || '')
+    setSortDir(sorts[0]?.defaultDir || 'desc')
+  }
+
+  const visibleItems = items
+    .filter((item) => {
+      if (search.trim() && searchKeys.length) {
+        const q = search.trim().toLowerCase()
+        const hit = searchKeys.some((key) => String(getByPath(item, key) ?? '').toLowerCase().includes(q))
+        if (!hit) return false
+      }
+      for (const f of filters) {
+        const v = filterValues[f.key]
+        if (v && String(getByPath(item, f.key) ?? '') !== v) return false
+      }
+      return true
+    })
+    .sort((a, b) => {
+      if (!sortKey) return 0
+      const av = getByPath(a, sortKey)
+      const bv = getByPath(b, sortKey)
+      const cmp = av == null && bv == null ? 0 : av == null ? -1 : bv == null ? 1 : av > bv ? 1 : av < bv ? -1 : 0
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -206,14 +241,83 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
               <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
               <p className="text-gray-500 mt-1">ทั้งหมด {items.length} รายการ</p>
             </div>
-            {canCreate && (
-              <button onClick={openCreate} className="btn-primary">+ เพิ่มรายการ</button>
-            )}
+            <div className="flex gap-2">
+              <button onClick={fetchItems} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 text-sm">
+                โหลดใหม่
+              </button>
+              {canCreate && (
+                <button onClick={openCreate} className="btn-primary">+ เพิ่มรายการ</button>
+              )}
+            </div>
           </div>
 
           {message.text && (
             <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
               {message.text}
+            </div>
+          )}
+
+          {(searchKeys.length > 0 || filters.length > 0 || sorts.length > 0) && (
+            <div className="card p-4 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                {searchKeys.length > 0 && (
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">ค้นหา</label>
+                    <input
+                      type="text"
+                      className="input-field"
+                      placeholder="พิมพ์คำค้นหา..."
+                      value={search}
+                      onChange={(e) => setSearch(e.target.value)}
+                    />
+                  </div>
+                )}
+                {filters.map((f) => (
+                  <div key={f.key}>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">{f.label}</label>
+                    <select
+                      className="input-field"
+                      value={filterValues[f.key] || ''}
+                      onChange={(e) => setFilterValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                    >
+                      <option value="">ทั้งหมด</option>
+                      {f.options.map((opt) => (
+                        <option key={opt} value={opt}>{opt}</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+                {sorts.length > 0 && (
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">เรียงตาม</label>
+                    <div className="flex gap-2">
+                      <select
+                        className="input-field"
+                        value={sortKey}
+                        onChange={(e) => setSortKey(e.target.value)}
+                      >
+                        {sorts.map((s) => (
+                          <option key={s.key} value={s.key}>{s.label}</option>
+                        ))}
+                      </select>
+                      <select
+                        className="input-field w-24"
+                        value={sortDir}
+                        onChange={(e) => setSortDir(e.target.value)}
+                      >
+                        <option value="desc">ใหม่→เก่า</option>
+                        <option value="asc">เก่า→ใหม่</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <div className="flex items-center justify-between mt-3">
+                <p className="text-xs text-gray-400">แสดง {visibleItems.length} รายการ จาก {items.length} รายการ</p>
+                <button onClick={resetFilters} className="text-xs px-3 py-1.5 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                  ล้างตัวกรอง
+                </button>
+              </div>
             </div>
           )}
 
@@ -256,11 +360,13 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {items.length === 0 ? (
+                    {visibleItems.length === 0 ? (
                       <tr>
-                        <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-gray-500">ยังไม่มีข้อมูล</td>
+                        <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-gray-500">
+                          {items.length === 0 ? 'ยังไม่มีข้อมูล' : 'ไม่พบรายการที่ตรงกับเงื่อนไขการค้นหา'}
+                        </td>
                       </tr>
-                    ) : items.map((item) => (
+                    ) : visibleItems.map((item) => (
                       <tr key={item._id} className="hover:bg-gray-50 transition-colors">
                         {columns.map((c) => (
                           <td key={c.key} className="px-6 py-4 text-sm text-gray-700">
