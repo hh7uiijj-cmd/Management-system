@@ -8,7 +8,7 @@ const { logAudit } = require('../utils/audit');
 const POPULATE = [
   { path: 'mainAssignee', select: 'name email department' },
   { path: 'coAssignees', select: 'name email department' },
-  { path: 'reviewer', select: 'name email department' },
+  { path: 'reviewers', select: 'name email department' },
   { path: 'createdBy', select: 'name email' },
 ];
 
@@ -54,7 +54,7 @@ router.get('/:id', auth, moduleAccess('view'), async (req, res) => {
 // POST /api/tasks
 router.post('/', auth, moduleAccess('create'), async (req, res) => {
   try {
-    const { title, description, department, mainAssignee, coAssignees, reviewer, startDate, deadline, status, priority } = req.body;
+    const { title, description, department, mainAssignee, coAssignees, reviewers, startDate, deadline, status, priority } = req.body;
 
     if (!title || !department || !mainAssignee || !deadline) {
       return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
@@ -71,7 +71,7 @@ router.post('/', auth, moduleAccess('create'), async (req, res) => {
       department,
       mainAssignee,
       coAssignees: coAssignees || [],
-      reviewer: reviewer || null,
+      reviewers: reviewers || [],
       startDate: startDate || null,
       deadline,
       status,
@@ -100,12 +100,12 @@ router.put('/:id', auth, moduleAccess('edit'), async (req, res) => {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์แก้ไขงานนี้' });
     }
 
-    const { title, description, mainAssignee, coAssignees, reviewer, startDate, deadline, status, priority } = req.body;
+    const { title, description, mainAssignee, coAssignees, reviewers, startDate, deadline, status, priority } = req.body;
     if (title) task.title = title;
     if (description !== undefined) task.description = description;
     if (mainAssignee) task.mainAssignee = mainAssignee;
     if (coAssignees !== undefined) task.coAssignees = coAssignees;
-    if (reviewer !== undefined) task.reviewer = reviewer || null;
+    if (reviewers !== undefined) task.reviewers = reviewers;
     if (startDate !== undefined) task.startDate = startDate || null;
     if (deadline) task.deadline = deadline;
     if (status) task.status = status;

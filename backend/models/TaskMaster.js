@@ -27,11 +27,10 @@ const taskMasterSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   }],
-  reviewer: {
+  reviewers: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null,
-  },
+  }],
   startDate: {
     type: Date,
     default: null,
