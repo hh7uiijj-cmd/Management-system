@@ -32,13 +32,12 @@ const Login = () => {
     >
       <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl w-full max-w-md p-8">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
-            <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+          <div className="inline-flex flex-col items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-indigo-500 to-blue-600 mb-4 leading-none shadow-sm shadow-indigo-200">
+            <span className="text-xs font-bold text-white/80">FT</span>
+            <span className="text-xl font-extrabold text-white -mt-1">20</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">ระบบจัดการ "แฟนพันธุ์แท้จิตวิทยา ครั้งที่ 20"</h1>
+          <h1 className="text-2xl font-bold text-gray-800">FT20 CONTROL CENTER</h1>
+          <p className="text-sm text-gray-500 mt-0.5">ระบบบริหารโครงการแฟนพันธุ์แท้</p>
           <p className="text-gray-500 mt-1 text-sm">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
         </div>
 
