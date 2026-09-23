@@ -1,4 +1,5 @@
 import ModulePage from './ModulePage'
+import DepartmentBadge from '../../components/DepartmentBadge'
 import { DEPARTMENTS, BUDGET_CATEGORIES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -18,7 +19,7 @@ const fmt = (n) => (n || 0).toLocaleString('th-TH')
 
 const columns = [
   { key: 'item', label: 'รายการ' },
-  { key: 'department', label: 'ฝ่าย' },
+  { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'initialBudget', label: 'งบตั้งต้น', render: (item) => fmt(item.initialBudget) },
   { key: 'estimatedCost', label: 'ประมาณการ', render: (item) => fmt(item.estimatedCost) },
   { key: 'actualCost', label: 'ค่าใช้จ่ายจริง', render: (item) => fmt(item.actualCost) },

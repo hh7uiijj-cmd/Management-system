@@ -1,4 +1,5 @@
 import ModulePage from './ModulePage'
+import DepartmentBadge from '../../components/DepartmentBadge'
 import { DEPARTMENTS, TASK_STATUSES, TASK_PRIORITIES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -18,7 +19,7 @@ const fields = [
 
 const columns = [
   { key: 'title', label: 'ชื่องาน' },
-  { key: 'department', label: 'ฝ่าย' },
+  { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', render: (item) => item.mainAssignee?.name || '-' },
   { key: 'reviewer', label: 'ผู้อนุมัติ', render: (item) => item.reviewer?.name || '-' },
   { key: 'startDate', label: 'วันที่เริ่ม', render: (item) => item.startDate ? new Date(item.startDate).toLocaleDateString('th-TH') : '-' },

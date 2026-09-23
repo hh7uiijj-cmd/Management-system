@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import Navbar from '../../components/Navbar'
 import Sidebar from '../../components/Sidebar'
+import { RoleBadge } from '../../components/PositionBadge'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/axios'
 
@@ -113,20 +114,23 @@ const UserManagement = () => {
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>
                         <td className="px-6 py-4">
-                          <select
-                            value={user.role?._id || ''}
-                            onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                            disabled={updatingId === user._id || user._id === currentUser?._id}
-                            className="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {roles.map((role) => (
-                              <option key={role._id} value={role._id}>
-                                {role.displayName}
-                              </option>
-                            ))}
-                          </select>
+                          <div className="flex items-center gap-2">
+                            <RoleBadge roleName={user.role?.name} label={user.role?.displayName} />
+                            <select
+                              value={user.role?._id || ''}
+                              onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                              disabled={updatingId === user._id || user._id === currentUser?._id}
+                              className="text-sm border border-gray-300 rounded-lg px-2 py-1 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {roles.map((role) => (
+                                <option key={role._id} value={role._id}>
+                                  {role.displayName}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
                           {updatingId === user._id && (
-                            <span className="ml-2 text-xs text-blue-500">กำลังอัพเดต...</span>
+                            <span className="ml-2 text-xs text-indigo-500">กำลังอัพเดต...</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">{formatDate(user.createdAt)}</td>

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import Navbar from '../../components/Navbar'
 import Sidebar from '../../components/Sidebar'
+import DepartmentBadge from '../../components/DepartmentBadge'
+import { PositionBadge } from '../../components/PositionBadge'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/axios'
 import { DEPARTMENTS, MEMBER_WORK_STATUSES } from '../../constants'
@@ -167,8 +169,8 @@ const Members = () => {
                     ) : members.map((m) => (
                       <tr key={m._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-800">{m.name}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{m.department}</td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{m.position || '-'}</td>
+                        <td className="px-6 py-4 text-sm"><DepartmentBadge department={m.department} /></td>
+                        <td className="px-6 py-4 text-sm"><PositionBadge position={m.position} /></td>
                         <td className="px-6 py-4 text-sm text-gray-600">{m.workStatus}</td>
                         <td className="px-6 py-4 space-x-2 whitespace-nowrap">
                           {canManage && (

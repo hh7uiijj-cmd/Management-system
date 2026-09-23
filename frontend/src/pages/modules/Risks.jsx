@@ -1,4 +1,5 @@
 import ModulePage from './ModulePage'
+import DepartmentBadge from '../../components/DepartmentBadge'
 import { DEPARTMENTS, RISK_ISSUE_TYPES, IMPACT_LEVELS, LIKELIHOOD_LEVELS, RISK_ISSUE_STATUSES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -18,7 +19,7 @@ const fields = [
 const columns = [
   { key: 'title', label: 'หัวข้อ' },
   { key: 'type', label: 'ประเภท' },
-  { key: 'department', label: 'ฝ่าย' },
+  { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'impactLevel', label: 'ผลกระทบ' },
   { key: 'likelihoodLevel', label: 'โอกาสเกิด' },
   { key: 'status', label: 'สถานะ' },

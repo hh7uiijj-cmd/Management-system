@@ -1,4 +1,5 @@
 import ModulePage from './ModulePage'
+import DepartmentBadge from '../../components/DepartmentBadge'
 import { DEPARTMENTS, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -12,7 +13,7 @@ const fields = [
 
 const columns = [
   { key: 'relatedTask', label: 'งานที่เกี่ยวข้อง', render: (item) => item.relatedTask?.title || '-' },
-  { key: 'department', label: 'ฝ่าย' },
+  { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'description', label: 'รายละเอียด' },
   { key: 'uploadedBy', label: 'ผู้อัปโหลด', render: (item) => item.uploadedBy?.name || '-' },
 ]

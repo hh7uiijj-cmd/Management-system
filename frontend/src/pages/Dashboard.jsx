@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'
 import CircularProgress from '../components/CircularProgress'
+import DepartmentBadge from '../components/DepartmentBadge'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 
@@ -248,7 +249,7 @@ const Dashboard = () => {
                         >
                           <div>
                             <p className="font-medium text-gray-800">{task.title}</p>
-                            <p className="text-sm text-gray-500">{task.department}</p>
+                            <div className="mt-1"><DepartmentBadge department={task.department} /></div>
                           </div>
                           <span className={`text-sm font-medium ${isOverdue(task) ? 'text-red-600' : 'text-orange-600'}`}>
                             {formatDate(task.deadline)}
@@ -298,7 +299,7 @@ const Dashboard = () => {
                         >
                           <div>
                             <p className="font-medium text-gray-800">{doc.title}</p>
-                            <p className="text-sm text-gray-500">{doc.department}</p>
+                            <div className="mt-1"><DepartmentBadge department={doc.department} /></div>
                           </div>
                           <span className="text-sm font-medium text-purple-600">{doc.approvalStatus}</span>
                         </Link>
@@ -322,7 +323,10 @@ const Dashboard = () => {
                         >
                           <div>
                             <p className="font-medium text-gray-800">{risk.title}</p>
-                            <p className="text-sm text-gray-500">{risk.department} · ผลกระทบ {risk.impactLevel}</p>
+                            <div className="mt-1 flex items-center gap-2">
+                              <DepartmentBadge department={risk.department} />
+                              <span className="text-xs text-gray-400">ผลกระทบ {risk.impactLevel}</span>
+                            </div>
                           </div>
                           <span className="text-sm font-medium text-red-600">{risk.status}</span>
                         </Link>
@@ -354,7 +358,7 @@ const Dashboard = () => {
                       <tbody>
                         {teamStatus.map((row) => (
                           <tr key={row.department} className="border-b border-gray-50 last:border-0">
-                            <td className="py-3 pr-4 font-medium text-gray-800">{row.department}</td>
+                            <td className="py-3 pr-4"><DepartmentBadge department={row.department} /></td>
                             <td className="py-3 px-4">{row.total}</td>
                             <td className="py-3 px-4 text-indigo-600">{row.inProgress}</td>
                             <td className="py-3 px-4 text-green-600">{row.completed}</td>
