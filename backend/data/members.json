@@ -1,0 +1,872 @@
+[
+  {
+    "name": "นางสาวโชติกา พินธุรักษ์",
+    "nickname": "ปริม",
+    "department": "ฝ่ายอำนวยการ/ประธานโครงการ",
+    "position": "ประธานโครงการ",
+    "role": "president",
+    "code": "079",
+    "email": "u67110110553079@gmail.com",
+    "password": "079"
+  },
+  {
+    "name": "นางสาวแพรวพลอย พฤศวานิช",
+    "nickname": "ส้มส้ม",
+    "department": "ฝ่ายอำนวยการ/ประธานโครงการ",
+    "position": "รองประธานโครงการ",
+    "role": "vice_president",
+    "code": "029",
+    "email": "u67110110553029@gmail.com",
+    "password": "029"
+  },
+  {
+    "name": "นายธีรภัทร ประพงศ์",
+    "nickname": "เติ้ล",
+    "department": "ฝ่ายอำนวยการ/ประธานโครงการ",
+    "position": "รองประธานโครงการ",
+    "role": "vice_president",
+    "code": "097",
+    "email": "u67110110553097@gmail.com",
+    "password": "097"
+  },
+  {
+    "name": "นางสาวนันธิฌา คงยงค์",
+    "nickname": "เบลล์",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "005",
+    "email": "u67110110553005@gmail.com",
+    "password": "005"
+  },
+  {
+    "name": "นางสาวกัญญารัศมี มหาเขต",
+    "nickname": "โบนัส",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "012",
+    "email": "u67110110553012@gmail.com",
+    "password": "012"
+  },
+  {
+    "name": "นางสาววชิราภรณ์ สายสาระ",
+    "nickname": "มัดหมี่",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "014",
+    "email": "u67110110553014@gmail.com",
+    "password": "014"
+  },
+  {
+    "name": "นายณัฐชนน พฤศวานิช",
+    "nickname": "นะนาย",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "เลขา",
+    "role": "secretary",
+    "code": "017",
+    "email": "u67110110553017@gmail.com",
+    "password": "017"
+  },
+  {
+    "name": "นางสาวพิมพ์ชนก จิรขจรเดช",
+    "nickname": "อึ้ง",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "036",
+    "email": "u67110110553036@gmail.com",
+    "password": "036"
+  },
+  {
+    "name": "นางสาวชลธิชา ไตรนุช",
+    "nickname": "ครีม",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "040",
+    "email": "u67110110553040@gmail.com",
+    "password": "040"
+  },
+  {
+    "name": "นางสาวชีวา ทิมสระน้อย",
+    "nickname": "ไข่มุก",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "046",
+    "email": "u67110110553046@gmail.com",
+    "password": "046"
+  },
+  {
+    "name": "นางสาวกมลรัตน์ กรเพชร",
+    "nickname": "ปอฝ้าย",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "047",
+    "email": "u67110110553047@gmail.com",
+    "password": "047"
+  },
+  {
+    "name": "นางสาวเกวริน สินสวัสดิ์",
+    "nickname": "จ๊ะจ๋า",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "053",
+    "email": "u67110110553053@gmail.com",
+    "password": "053"
+  },
+  {
+    "name": "นางสาวธัญรดา มุขแก้ว",
+    "nickname": "พราวด์",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "หัวหน้า",
+    "role": "head",
+    "code": "058",
+    "email": "u67110110553058@gmail.com",
+    "password": "058"
+  },
+  {
+    "name": "นางสาวสิริลักษ์ แย้มเพชร",
+    "nickname": "พืช",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "072",
+    "email": "u67110110553072@gmail.com",
+    "password": "072"
+  },
+  {
+    "name": "นางสาวรักชัญญา ชูนาค",
+    "nickname": "รัค",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "088",
+    "email": "u67110110553088@gmail.com",
+    "password": "088"
+  },
+  {
+    "name": "นางสาวจุติพร พูนพัฒนสุข",
+    "nickname": "หมวย",
+    "department": "ฝ่ายพิธีการและงานลงทะเบียน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "102",
+    "email": "u67110110553102@gmail.com",
+    "password": "102"
+  },
+  {
+    "name": "นางสาวสมิตา บัวทอง",
+    "nickname": "ยีนส์",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "002",
+    "email": "u67110110553002@gmail.com",
+    "password": "002"
+  },
+  {
+    "name": "นางสาวนริศา นิยมวรรณ",
+    "nickname": "น้ำตาล",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "003",
+    "email": "u67110110553003@gmail.com",
+    "password": "003"
+  },
+  {
+    "name": "นายพีรวัส ศรีหฤทัย",
+    "nickname": "ไนน์",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "013",
+    "email": "u67110110553013@gmail.com",
+    "password": "013"
+  },
+  {
+    "name": "นายปูนณกัณฑ์ กันเพ็ง",
+    "nickname": "ปาล์ม",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "021",
+    "email": "u67110110553021@gmail.com",
+    "password": "021"
+  },
+  {
+    "name": "นางสาวพิมพ์ปฏิพาน แก้วพิภพ",
+    "nickname": "กุ๊กไก่",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "028",
+    "email": "u67110110553028@gmail.com",
+    "password": "028"
+  },
+  {
+    "name": "นางสาวกุสุมา สลับศรี",
+    "nickname": "ปอย",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "035",
+    "email": "u67110110553035@gmail.com",
+    "password": "035"
+  },
+  {
+    "name": "นางสาวญาณิชา ไตรญาณ",
+    "nickname": "บีม",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "048",
+    "email": "u67110110553048@gmail.com",
+    "password": "048"
+  },
+  {
+    "name": "นางสาวธนพร ปาประโคน",
+    "nickname": "มีนา",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "056",
+    "email": "u67110110553056@gmail.com",
+    "password": "056"
+  },
+  {
+    "name": "นางสาวอิสสรา บุญเฮง",
+    "nickname": "กาฟิวส์",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "060",
+    "email": "u67110110553060@gmail.com",
+    "password": "060"
+  },
+  {
+    "name": "นางสาวเพชรฤดี สังฆะกาโร",
+    "nickname": "เชียร์",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "063",
+    "email": "u67110110553063@gmail.com",
+    "password": "063"
+  },
+  {
+    "name": "นางสาวนพเก้า พุฒซ้อน",
+    "nickname": "กิ่งไผ่",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "065",
+    "email": "u67110110553065@gmail.com",
+    "password": "065"
+  },
+  {
+    "name": "นางสาวสุภัตรา พรหมรี",
+    "nickname": "อาย",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "เลขา",
+    "role": "secretary",
+    "code": "069",
+    "email": "u67110110553069@gmail.com",
+    "password": "069"
+  },
+  {
+    "name": "นางสาวกมลลักษณ์ เพชรกลาง",
+    "nickname": "การ์ตูน",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "075",
+    "email": "u67110110553075@gmail.com",
+    "password": "075"
+  },
+  {
+    "name": "นางสาวพริมญาดา วิมลลักษณ์",
+    "nickname": "พริม",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "076",
+    "email": "u67110110553076@gmail.com",
+    "password": "076"
+  },
+  {
+    "name": "นางสาวกัณฐิกา บุญธรรม",
+    "nickname": "กัณ",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "078",
+    "email": "u67110110553078@gmail.com",
+    "password": "078"
+  },
+  {
+    "name": "นางสาวจิรภิญญา บุญสิทธิ์",
+    "nickname": "ก้านตอง",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "082",
+    "email": "u67110110553082@gmail.com",
+    "password": "082"
+  },
+  {
+    "name": "นางสาวธันยพร โสภาวัตร",
+    "nickname": "ชมพู่",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "083",
+    "email": "u67110110553083@gmail.com",
+    "password": "083"
+  },
+  {
+    "name": "นางสาวนาวีต้า รัญจวนจิตร",
+    "nickname": "นาวิ",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "หัวหน้า",
+    "role": "head",
+    "code": "093",
+    "email": "u67110110553093@gmail.com",
+    "password": "093"
+  },
+  {
+    "name": "นางสาวนันท์นภัส เขตบุญไสย",
+    "nickname": "เบญ",
+    "department": "ฝ่ายนิทรรศการและสื่อ Infographic",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "094",
+    "email": "u67110110553094@gmail.com",
+    "password": "094"
+  },
+  {
+    "name": "นางสาวมนฑกานต์ วงษ์สุวรรณ",
+    "nickname": "มายด์",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "004",
+    "email": "u67110110553004@gmail.com",
+    "password": "004"
+  },
+  {
+    "name": "นายธนวัฒน์ แสงนนท์",
+    "nickname": "ดาวเหนือ",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "หัวหน้า",
+    "role": "head",
+    "code": "009",
+    "email": "u67110110553009@gmail.com",
+    "password": "009"
+  },
+  {
+    "name": "นายปภินวิทย์ บุญจันทร์",
+    "nickname": "ภีมย์",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "015",
+    "email": "u67110110553015@gmail.com",
+    "password": "015"
+  },
+  {
+    "name": "นายณัฐพล หนูอ่อน",
+    "nickname": "บอส",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "016",
+    "email": "u67110110553016@gmail.com",
+    "password": "016"
+  },
+  {
+    "name": "นางสาวจิราภา ถาวรวิริยะนันท์",
+    "nickname": "นิวส์",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "018",
+    "email": "u67110110553018@gmail.com",
+    "password": "018"
+  },
+  {
+    "name": "นางสาวศศิวิมล โทแก้ว",
+    "nickname": "หมูหวาน",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "019",
+    "email": "u67110110553019@gmail.com",
+    "password": "019"
+  },
+  {
+    "name": "นายวีรภัทร กิตติวรรณวงค์",
+    "nickname": "ซัน",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "026",
+    "email": "u67110110553026@gmail.com",
+    "password": "026"
+  },
+  {
+    "name": "นายคงเอก ธนิกุล",
+    "nickname": "นนท์",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "050",
+    "email": "u67110110553050@gmail.com",
+    "password": "050"
+  },
+  {
+    "name": "นางสาวธนภรณ์ ปราณนัทธี",
+    "nickname": "อุ้มอิ่ม",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "059",
+    "email": "u67110110553059@gmail.com",
+    "password": "059"
+  },
+  {
+    "name": "นางสาวสิริวิมล สุวรรณรัศมี",
+    "nickname": "เกวลิน",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "064",
+    "email": "u67110110553064@gmail.com",
+    "password": "064"
+  },
+  {
+    "name": "นางสาวอภิชญา โทไข่สอน",
+    "nickname": "พื้น",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "067",
+    "email": "u67110110553067@gmail.com",
+    "password": "067"
+  },
+  {
+    "name": "นางสาวณัฐพร รวมธรรม",
+    "nickname": "ไอซ์",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "071",
+    "email": "u67110110553071@gmail.com",
+    "password": "071"
+  },
+  {
+    "name": "นางสาวนัณธิณี นุ่มมีศรี",
+    "nickname": "มด",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "080",
+    "email": "u67110110553080@gmail.com",
+    "password": "080"
+  },
+  {
+    "name": "นางสาวญาตาวี พร้อมจิตร์",
+    "nickname": "แก้ม",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "081",
+    "email": "u67110110553081@gmail.com",
+    "password": "081"
+  },
+  {
+    "name": "นางสาวรัญชิดา แผงฤทธิ์",
+    "nickname": "เนย",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "090",
+    "email": "u67110110553090@gmail.com",
+    "password": "090"
+  },
+  {
+    "name": "นางสาววริธร คันทะโสม",
+    "nickname": "มิวสิค",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "091",
+    "email": "u67110110553091@gmail.com",
+    "password": "091"
+  },
+  {
+    "name": "นายอิทธิพัทธ์ แก้วเจริญ",
+    "nickname": "แพ็คเกจ",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "096",
+    "email": "u67110110553096@gmail.com",
+    "password": "096"
+  },
+  {
+    "name": "นางสาวณัฐมน มาศโอสถ",
+    "nickname": "เฟรชชี่",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "100",
+    "email": "u67110110553100@gmail.com",
+    "password": "100"
+  },
+  {
+    "name": "นายพัชรดนัย สายสุ่ม",
+    "nickname": "แบงค์",
+    "department": "ฝ่ายสถานที่ และประชาสัมพันธ์สื่อดิจิทัล",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "103",
+    "email": "u67110110553103@gmail.com",
+    "password": "103"
+  },
+  {
+    "name": "นางสาววิระตา ไชยเทพ",
+    "nickname": "บีบี",
+    "department": "ฝ่ายธุรการและงานประเมิน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "006",
+    "email": "u67110110553006@gmail.com",
+    "password": "006"
+  },
+  {
+    "name": "นายขวัญชัย มินก๊าศ",
+    "nickname": "ชาคริต",
+    "department": "ฝ่ายธุรการและงานประเมิน",
+    "position": "หัวหน้า",
+    "role": "head",
+    "code": "020",
+    "email": "u67110110553020@gmail.com",
+    "password": "020"
+  },
+  {
+    "name": "นางสาวเสาวลักษณ์ วิมลนพคุณ",
+    "nickname": "ลูกแก้ว",
+    "department": "ฝ่ายธุรการและงานประเมิน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "031",
+    "email": "u67110110553031@gmail.com",
+    "password": "031"
+  },
+  {
+    "name": "นายศุภกร กิติสุธาธรรม",
+    "nickname": "เต๋า",
+    "department": "ฝ่ายธุรการและงานประเมิน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "034",
+    "email": "u67110110553034@gmail.com",
+    "password": "034"
+  },
+  {
+    "name": "นางสาวมนรดา พิกุลเจริญยิ่ง",
+    "nickname": "ออยล์",
+    "department": "ฝ่ายธุรการและงานประเมิน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "061",
+    "email": "u67110110553061@gmail.com",
+    "password": "061"
+  },
+  {
+    "name": "นางสาวชาลิสา เจริญธรรม",
+    "nickname": "พริม",
+    "department": "ฝ่ายธุรการและงานประเมิน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "066",
+    "email": "u67110110553066@gmail.com",
+    "password": "066"
+  },
+  {
+    "name": "นางสาวณัฐธัญญา กลัดพ่วง",
+    "nickname": "ครีม",
+    "department": "ฝ่ายธุรการและงานประเมิน",
+    "position": "เลขา",
+    "role": "secretary",
+    "code": "092",
+    "email": "u67110110553092@gmail.com",
+    "password": "092"
+  },
+  {
+    "name": "นางสาววิลาสินี ดีโสภณ",
+    "nickname": "เฟิน",
+    "department": "ฝ่ายธุรการและงานประเมิน",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "105",
+    "email": "u67110110553105@gmail.com",
+    "password": "105"
+  },
+  {
+    "name": "นางสาวปภาวรินท์ วันแสวง",
+    "nickname": "บิว",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "008",
+    "email": "u67110110553008@gmail.com",
+    "password": "008"
+  },
+  {
+    "name": "นางสาวจันทิวา พิมพิสา",
+    "nickname": "ผิงผิง",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "023",
+    "email": "u67110110553023@gmail.com",
+    "password": "023"
+  },
+  {
+    "name": "นางสาวพิชชาพร พูลภิญโญ",
+    "nickname": "เฟิร์น",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "025",
+    "email": "u67110110553025@gmail.com",
+    "password": "025"
+  },
+  {
+    "name": "นางสาวธนภรณ์ ชีล้อม",
+    "nickname": "น้ำหวาน",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "027",
+    "email": "u67110110553027@gmail.com",
+    "password": "027"
+  },
+  {
+    "name": "นางสาวสุนิสา แพงสวัสดิ์",
+    "nickname": "นุ้ย",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "032",
+    "email": "u67110110553032@gmail.com",
+    "password": "032"
+  },
+  {
+    "name": "นางสาวอรปรียา จีรังกูล",
+    "nickname": "ใบบัว",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "033",
+    "email": "u67110110553033@gmail.com",
+    "password": "033"
+  },
+  {
+    "name": "นางสาวอจลา ปราณีชน",
+    "nickname": "จำ",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "038",
+    "email": "u67110110553038@gmail.com",
+    "password": "038"
+  },
+  {
+    "name": "นางสาวนัฐฐิการณ์ ภูสะอาด",
+    "nickname": "ปีใหม่",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "039",
+    "email": "u67110110553039@gmail.com",
+    "password": "039"
+  },
+  {
+    "name": "นางสาวอโณทัย ประเสริฐสุขกมล",
+    "nickname": "ลูกหมู",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "หัวหน้า",
+    "role": "head",
+    "code": "041",
+    "email": "u67110110553041@gmail.com",
+    "password": "041"
+  },
+  {
+    "name": "นางสาวปรายฟ้า ดวงอรุณ",
+    "nickname": "ฟ้า",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "043",
+    "email": "u67110110553043@gmail.com",
+    "password": "043"
+  },
+  {
+    "name": "นางสาวจุฬาลักษณ์ ปุริสพันธ์",
+    "nickname": "แบม",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "045",
+    "email": "u67110110553045@gmail.com",
+    "password": "045"
+  },
+  {
+    "name": "นายรัชชานนท์ ประจักษ์ศศิธร",
+    "nickname": "เด่น",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "เลขา",
+    "role": "secretary",
+    "code": "052",
+    "email": "u67110110553052@gmail.com",
+    "password": "052"
+  },
+  {
+    "name": "นางสาวศิรินทรา อิทธิพร",
+    "nickname": "ใบเฟิร์น",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "070",
+    "email": "u67110110553070@gmail.com",
+    "password": "070"
+  },
+  {
+    "name": "นางสาวรวิพร ไกรพึ่งดี",
+    "nickname": "พั้นซ์",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "084",
+    "email": "u67110110553084@gmail.com",
+    "password": "084"
+  },
+  {
+    "name": "นางสาวเพชรไพลิน ลิ้มธีรโชติ",
+    "nickname": "นกยูง",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "087",
+    "email": "u67110110553087@gmail.com",
+    "password": "087"
+  },
+  {
+    "name": "นางสาวธัญวรัตม์ มีมาก",
+    "nickname": "หมิว",
+    "department": "ฝ่ายสวัสดิการและงานบริการ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "101",
+    "email": "u67110110553101@gmail.com",
+    "password": "101"
+  },
+  {
+    "name": "นายนิติรัฏฐ์ เล้าประเสริฐ",
+    "nickname": "ริว",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "หัวหน้า",
+    "role": "head",
+    "code": "007",
+    "email": "u67110110553007@gmail.com",
+    "password": "007"
+  },
+  {
+    "name": "นางสาวญาณิศา ดาราสว่าง",
+    "nickname": "น้ำผึ้ง",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "030",
+    "email": "u67110110553030@gmail.com",
+    "password": "030"
+  },
+  {
+    "name": "นางสาวสากีรา มะลี",
+    "nickname": "ราร่า",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "051",
+    "email": "u67110110553051@gmail.com",
+    "password": "051"
+  },
+  {
+    "name": "นางสาวธัญชนก สัมพารการ",
+    "nickname": "จุ่ม",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "062",
+    "email": "u67110110553062@gmail.com",
+    "password": "062"
+  },
+  {
+    "name": "นางสาวบัวชมพู ช่องวารินทร์",
+    "nickname": "ชมพู่",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "073",
+    "email": "u67110110553073@gmail.com",
+    "password": "073"
+  },
+  {
+    "name": "นางสาวจารุวรรณ มีลือวรรณ",
+    "nickname": "นุ่น",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "074",
+    "email": "u67110110553074@gmail.com",
+    "password": "074"
+  },
+  {
+    "name": "นางสาวณัฐณิชา พลอยสุขใส",
+    "nickname": "ข้าวจ้าว",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "077",
+    "email": "u67110110553077@gmail.com",
+    "password": "077"
+  },
+  {
+    "name": "นางสาวศศินันท์ พิมสุวรรณ",
+    "nickname": "กระแต",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "เลขา",
+    "role": "secretary",
+    "code": "098",
+    "email": "u67110110553098@gmail.com",
+    "password": "098"
+  },
+  {
+    "name": "นางสาวพัชราภา แซ่ย่าง",
+    "nickname": "พัด",
+    "department": "ฝ่ายวิชาการและการทดสอบ",
+    "position": "สมาชิก",
+    "role": "member",
+    "code": "104",
+    "email": "u67110110553104@gmail.com",
+    "password": "104"
+  }
+]

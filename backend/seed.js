@@ -4,6 +4,7 @@ const Role = require('./models/Role');
 const User = require('./models/User');
 const Member = require('./models/Member');
 const { ROLE_TIER_LABELS } = require('./config/constants');
+const roster = require('./data/members.json');
 
 async function seed() {
   await mongoose.connect(process.env.MONGODB_URI);
@@ -62,8 +63,37 @@ async function seed() {
     role: adminRole._id,
   });
 
+  // รายชื่อสมาชิกจริงจากไฟล์ FT20 Control Center (backend/data/members.json)
+  // อีเมล/รหัสผ่านของแต่ละคน: u67110110553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>
+  const memberRole = await Role.findOne({ name: 'member' });
+  const roleByTier = {
+    president: presidentRole,
+    vice_president: vicePresidentRole,
+    head: headRole,
+    secretary: secretaryRole,
+    member: memberRole,
+  };
+
+  for (const person of roster) {
+    const memberDoc = await Member.create({
+      name: person.name,
+      department: person.department,
+      position: person.position,
+    });
+
+    await User.create({
+      name: person.name,
+      email: person.email,
+      password: person.password,
+      role: roleByTier[person.role]._id,
+      department: person.department,
+      member: memberDoc._id,
+    });
+  }
+
   console.log('Seed completed!');
   console.log('Admin login: DaoCha / ChaDao');
+  console.log(`สมาชิกทั้งหมด ${roster.length} คน — login ด้วย u67110110553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>`);
   await mongoose.disconnect();
 }
 
