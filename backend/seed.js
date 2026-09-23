@@ -3,7 +3,8 @@ const mongoose = require('mongoose');
 const Role = require('./models/Role');
 const User = require('./models/User');
 const Member = require('./models/Member');
-const { DEPARTMENTS, ROLE_TIER_LABELS } = require('./config/constants');
+const { ROLE_TIER_LABELS } = require('./config/constants');
+const roster = require('./data/members.json');
 
 async function seed() {
   await mongoose.connect(process.env.MONGODB_URI);
@@ -62,58 +63,38 @@ async function seed() {
     role: adminRole._id,
   });
 
-  // ประธานโครงการ / รองประธาน (มองเห็นทุกฝ่าย)
-  await User.create({
-    name: 'ประธานโครงการ',
-    email: 'president@system.com',
-    password: 'president1234',
-    role: presidentRole._id,
-  });
-  await User.create({
-    name: 'รองประธานโครงการ',
-    email: 'vicepresident@system.com',
-    password: 'vp1234567',
-    role: vicePresidentRole._id,
-  });
+  // รายชื่อสมาชิกจริงจากไฟล์ FT20 Control Center (backend/data/members.json)
+  // อีเมล/รหัสผ่านของแต่ละคน: u67110110553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>
+  const memberRole = await Role.findOne({ name: 'member' });
+  const roleByTier = {
+    president: presidentRole,
+    vice_president: vicePresidentRole,
+    head: headRole,
+    secretary: secretaryRole,
+    member: memberRole,
+  };
 
-  // ตัวอย่างหัวหน้าฝ่าย + เลขาฝ่าย + สมาชิก ให้ครบทั้ง 7 ฝ่าย เพื่อทดสอบสิทธิ์
-  const deptSlug = (name, i) => `dept${i}`;
-  for (let i = 0; i < DEPARTMENTS.length; i++) {
-    const dept = DEPARTMENTS[i];
-    const slug = deptSlug(dept, i + 1);
-
-    await Member.create({ name: `หัวหน้าฝ่าย ${i + 1}`, department: dept, position: 'หัวหน้าฝ่าย' });
-    await Member.create({ name: `เลขาฝ่าย ${i + 1}`, department: dept, position: 'เลขาฝ่าย' });
-    await Member.create({ name: `สมาชิกฝ่าย ${i + 1}`, department: dept, position: 'สมาชิก' });
-
-    await User.create({
-      name: `หัวหน้าฝ่าย ${i + 1}`,
-      email: `head${slug}@system.com`,
-      password: 'head1234',
-      role: headRole._id,
-      department: dept,
+  for (const person of roster) {
+    const memberDoc = await Member.create({
+      name: person.name,
+      department: person.department,
+      position: person.position,
     });
+
     await User.create({
-      name: `เลขาฝ่าย ${i + 1}`,
-      email: `secretary${slug}@system.com`,
-      password: 'secretary1234',
-      role: secretaryRole._id,
-      department: dept,
-    });
-    await User.create({
-      name: `สมาชิกฝ่าย ${i + 1}`,
-      email: `member${slug}@system.com`,
-      password: 'member1234',
-      role: (await Role.findOne({ name: 'member' }))._id,
-      department: dept,
+      name: person.name,
+      email: person.email,
+      password: person.password,
+      role: roleByTier[person.role]._id,
+      department: person.department,
+      member: memberDoc._id,
     });
   }
 
   console.log('Seed completed!');
   console.log('Admin login: admin@system.com / admin1234');
-  console.log('President login: president@system.com / president1234');
-  console.log('Vice President login: vicepresident@system.com / vp1234567');
-  console.log('ตัวอย่างหัวหน้าฝ่าย/เลขา/สมาชิก: head/secretary/member + dept1..dept7 @system.com (เช่น headdept1@system.com / head1234)');
+  console.log(`สมาชิกทั้งหมด ${roster.length} คน — login ด้วย u67110110553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>`);
+  console.log(`ตัวอย่าง: ${roster[0].email} / ${roster[0].password} (${roster[0].name})`);
   await mongoose.disconnect();
 }
 
