@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const TaskMaster = require('../models/TaskMaster');
 const auth = require('../middleware/auth');
-const { moduleAccess, departmentFilter, canAccessDoc } = require('../middleware/moduleAccess');
+const { moduleAccess, canAccessDoc } = require('../middleware/moduleAccess');
 const { logAudit } = require('../utils/audit');
 
 const POPULATE = [
@@ -12,10 +12,21 @@ const POPULATE = [
   { path: 'createdBy', select: 'name email' },
 ];
 
+// หัวหน้า/เลขาฝ่ายธุรการและงานประเมิน ดูงานได้ทุกฝ่ายเหมือนประธาน (เพื่องานติดตาม/ประเมินผลรวมทั้งโครงการ)
+// สิทธิ์ create/edit/delete ยังจำกัดเฉพาะฝ่ายตัวเองตามปกติ — ขยายแค่สิทธิ์ "ดู" เท่านั้น
+const ADMIN_DEPARTMENT = 'ฝ่ายธุรการและงานประเมิน';
+const canViewAllTasks = (req) => {
+  const role = req.user.role?.name;
+  if (role === 'admin' || ['president', 'vice_president'].includes(role)) return true;
+  if (['head', 'secretary'].includes(role) && req.user.department === ADMIN_DEPARTMENT) return true;
+  return false;
+};
+const taskViewFilter = (req) => (canViewAllTasks(req) ? {} : { department: req.user.department });
+
 // GET /api/tasks
 router.get('/', auth, moduleAccess('view'), async (req, res) => {
   try {
-    const tasks = await TaskMaster.find(departmentFilter(req))
+    const tasks = await TaskMaster.find(taskViewFilter(req))
       .populate(POPULATE)
       .sort({ deadline: 1 });
     res.json(tasks);
@@ -30,7 +41,7 @@ router.get('/:id', auth, moduleAccess('view'), async (req, res) => {
   try {
     const task = await TaskMaster.findById(req.params.id).populate(POPULATE);
     if (!task) return res.status(404).json({ message: 'ไม่พบงานนี้' });
-    if (!canAccessDoc(req, task, { action: 'view' })) {
+    if (!canViewAllTasks(req) && !canAccessDoc(req, task, { action: 'view' })) {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์ดูงานนี้' });
     }
     res.json(task);
