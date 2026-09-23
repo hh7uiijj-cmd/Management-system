@@ -6,68 +6,71 @@ import CircularProgress from '../components/CircularProgress'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 
-const StatCard = ({ label, value, color, icon }) => (
-  <div className="card p-6">
-    <div className="flex items-center justify-between">
-      <div>
-        <p className="text-sm font-medium text-gray-500">{label}</p>
-        <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
-      </div>
-      <div className={`p-3 rounded-full bg-opacity-10 ${color.replace('text-', 'bg-')}`}>
-        {icon}
-      </div>
-    </div>
+const MiniStat = ({ label, value, sub, color = 'text-gray-800' }) => (
+  <div className="card p-4">
+    <p className="text-xs font-medium text-gray-500">{label}</p>
+    <p className={`text-2xl font-bold mt-1 ${color}`}>{value}</p>
+    {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
   </div>
 )
 
+const EmptyRow = ({ children }) => (
+  <p className="text-gray-500 text-sm text-center py-8">{children}</p>
+)
+
+const formatMoney = (n) =>
+  (n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return '-'
+  return new Date(dateStr).toLocaleDateString('th-TH', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 const Dashboard = () => {
-  const { user, hasPermission } = useAuth()
-  const [stats, setStats] = useState({ totalEvents: 0, myRegistrations: 0, pendingApprovals: 0 })
+  const { user } = useAuth()
   const [recentEvents, setRecentEvents] = useState([])
-  const [taskStats, setTaskStats] = useState({ completed: 0, total: 0 })
-  const [urgentTasks, setUrgentTasks] = useState([])
   const [loading, setLoading] = useState(true)
+
+  const [tasks, setTasks] = useState([])
+  const [documents, setDocuments] = useState([])
+  const [letters, setLetters] = useState([])
+  const [budgets, setBudgets] = useState([])
+  const [risks, setRisks] = useState([])
+  const [evidence, setEvidence] = useState([])
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [eventsRes, myRegsRes, tasksRes] = await Promise.all([
-          api.get('/api/events'),
-          api.get('/api/registrations/my'),
-          api.get('/api/tasks').catch(() => ({ data: [] })),
+        const empty = { data: [] }
+        const [
+          eventsRes,
+          tasksRes,
+          documentsRes,
+          lettersRes,
+          budgetsRes,
+          risksRes,
+          evidenceRes,
+        ] = await Promise.all([
+          api.get('/api/events').catch(() => empty),
+          api.get('/api/tasks').catch(() => empty),
+          api.get('/api/documents').catch(() => empty),
+          api.get('/api/letters').catch(() => empty),
+          api.get('/api/budgets').catch(() => empty),
+          api.get('/api/risks').catch(() => empty),
+          api.get('/api/evidence').catch(() => empty),
         ])
 
-        const events = eventsRes.data
-        const myRegs = myRegsRes.data
-        const tasks = tasksRes.data
-
-        let pendingCount = 0
-        if (hasPermission('approve_registrations')) {
-          try {
-            const pendingRes = await api.get('/api/registrations/pending')
-            pendingCount = pendingRes.data.length
-          } catch {}
-        }
-
-        setStats({
-          totalEvents: events.filter(e => e.status === 'active').length,
-          myRegistrations: myRegs.length,
-          pendingApprovals: pendingCount,
-        })
-        setRecentEvents(events.slice(0, 5))
-
-        setTaskStats({
-          completed: tasks.filter(t => t.status === 'เสร็จสิ้น').length,
-          total: tasks.length,
-        })
-
-        const now = new Date()
-        const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
-        const urgent = tasks
-          .filter(t => t.status !== 'เสร็จสิ้น' && t.status !== 'ยกเลิก' && new Date(t.deadline) <= in3Days)
-          .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
-          .slice(0, 5)
-        setUrgentTasks(urgent)
+        setRecentEvents(eventsRes.data.slice(0, 5))
+        setTasks(tasksRes.data)
+        setDocuments(documentsRes.data)
+        setLetters(lettersRes.data)
+        setBudgets(budgetsRes.data)
+        setRisks(risksRes.data)
+        setEvidence(evidenceRes.data)
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {
@@ -75,16 +78,55 @@ const Dashboard = () => {
       }
     }
     fetchData()
-  }, [hasPermission])
+  }, [])
 
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '-'
-    return new Date(dateStr).toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    })
-  }
+  const now = new Date()
+  const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+
+  const isDone = (t) => t.status === 'เสร็จสิ้น'
+  const isCancelled = (t) => t.status === 'ยกเลิก'
+  const isOverdue = (t) =>
+    !isDone(t) && !isCancelled(t) && t.deadline && new Date(t.deadline) < now
+  const isUpcoming3d = (t) =>
+    !isDone(t) && !isCancelled(t) && !isOverdue(t) && t.deadline && new Date(t.deadline) <= in3Days
+
+  const totalTasks = tasks.length
+  const inProgressTasks = tasks.filter((t) => t.status === 'กำลังดำเนินการ').length
+  const overdueTasks = tasks.filter(isOverdue).length
+  const upcomingTasks = tasks.filter(isUpcoming3d)
+  const completedTasks = tasks.filter(isDone).length
+
+  const evidenceTaskIds = new Set(
+    evidence.map((e) => (typeof e.relatedTask === 'object' ? e.relatedTask?._id : e.relatedTask))
+  )
+  const tasksMissingEvidence = tasks.filter((t) => isDone(t) && !evidenceTaskIds.has(t._id)).length
+
+  const pendingDocuments = documents.filter((d) =>
+    ['รอตรวจสอบ', 'รอผู้บริหารอนุมัติ'].includes(d.approvalStatus)
+  )
+  const pendingLetters = letters.filter((l) => l.status === 'รอตอบรับ')
+  const openRisks = risks.filter((r) => r.status !== 'ปิดเรื่อง')
+
+  const totalInitialBudget = budgets.reduce((sum, b) => sum + (b.initialBudget || 0), 0)
+  const totalActualCost = budgets.reduce((sum, b) => sum + (b.actualCost || 0), 0)
+
+  const urgentTasks = [...upcomingTasks, ...tasks.filter(isOverdue)]
+    .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+    .slice(0, 5)
+
+  const teamStatus = Object.values(
+    tasks.reduce((acc, t) => {
+      const dept = t.department || 'ไม่ระบุฝ่าย'
+      if (!acc[dept]) {
+        acc[dept] = { department: dept, total: 0, inProgress: 0, completed: 0, overdue: 0 }
+      }
+      acc[dept].total += 1
+      if (t.status === 'กำลังดำเนินการ') acc[dept].inProgress += 1
+      if (isDone(t)) acc[dept].completed += 1
+      if (isOverdue(t)) acc[dept].overdue += 1
+      return acc
+    }, {})
+  )
 
   const statusLabel = { active: 'เปิดรับสมัคร', closed: 'ปิดรับสมัคร', cancelled: 'ยกเลิก' }
   const statusClass = { active: 'badge-active', closed: 'badge-closed', cancelled: 'badge-cancelled' }
@@ -106,50 +148,36 @@ const Dashboard = () => {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <StatCard
-                  label="กิจกรรมที่เปิดอยู่"
-                  value={stats.totalEvents}
+              {/* PROJECT OVERVIEW */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+                <MiniStat label="งานทั้งหมด" value={totalTasks} />
+                <MiniStat label="กำลังดำเนินการ" value={inProgressTasks} color="text-blue-600" />
+                <MiniStat label="ล่าช้า / เลยกำหนด" value={overdueTasks} color="text-red-600" />
+                <MiniStat label="ใกล้ถึงกำหนด 0-3 วัน" value={upcomingTasks.length} color="text-orange-600" />
+                <MiniStat label="งานเสร็จสิ้น" value={completedTasks} color="text-green-600" />
+                <MiniStat label="เอกสารรออนุมัติ" value={pendingDocuments.length} color="text-purple-600" />
+                <MiniStat label="หนังสือรอตอบรับ" value={pendingLetters.length} color="text-purple-600" />
+                <MiniStat label="ปัญหา/ความเสี่ยงค้าง" value={openRisks.length} color="text-red-600" />
+                <MiniStat label="งานเสร็จแต่ขาดหลักฐาน" value={tasksMissingEvidence} color="text-yellow-600" />
+                <MiniStat
+                  label="งบประมาณตั้งต้นรวม"
+                  value={`${formatMoney(totalInitialBudget)} บาท`}
                   color="text-blue-600"
-                  icon={
-                    <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  }
                 />
-                <StatCard
-                  label="การลงทะเบียนของฉัน"
-                  value={stats.myRegistrations}
-                  color="text-green-600"
-                  icon={
-                    <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                  }
+                <MiniStat
+                  label="ค่าใช้จ่ายจริงรวม"
+                  value={`${formatMoney(totalActualCost)} บาท`}
+                  color="text-red-600"
                 />
-                {hasPermission('approve_registrations') && (
-                  <StatCard
-                    label="รอการอนุมัติ"
-                    value={stats.pendingApprovals}
-                    color="text-yellow-600"
-                    icon={
-                      <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    }
-                  />
-                )}
               </div>
 
+              {/* PRIORITY + PROGRESS */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                 <div className="card p-6">
                   <h2 className="text-lg font-semibold text-gray-800 mb-1">งานเร่งด่วน</h2>
-                  <p className="text-sm text-gray-500 mb-4">งานที่ใกล้ถึงกำหนดภายใน 3 วัน</p>
+                  <p className="text-sm text-gray-500 mb-4">งานที่ล่าช้าหรือใกล้ถึงกำหนดภายใน 3 วัน</p>
                   {urgentTasks.length === 0 ? (
-                    <p className="text-gray-500 text-sm text-center py-8">ไม่มีงานเร่งด่วน</p>
+                    <EmptyRow>ไม่มีงานเร่งด่วน</EmptyRow>
                   ) : (
                     <div className="space-y-2">
                       {urgentTasks.map((task) => (
@@ -162,7 +190,7 @@ const Dashboard = () => {
                             <p className="font-medium text-gray-800">{task.title}</p>
                             <p className="text-sm text-gray-500">{task.department}</p>
                           </div>
-                          <span className="text-sm font-medium text-orange-600">
+                          <span className={`text-sm font-medium ${isOverdue(task) ? 'text-red-600' : 'text-orange-600'}`}>
                             {formatDate(task.deadline)}
                           </span>
                         </Link>
@@ -173,28 +201,116 @@ const Dashboard = () => {
 
                 <div className="card p-6 flex flex-col items-center justify-center">
                   <h2 className="text-lg font-semibold text-gray-800 mb-4 self-start">อัตราความสำเร็จของงาน</h2>
-                  <CircularProgress
-                    percent={taskStats.total ? (taskStats.completed / taskStats.total) * 100 : 0}
-                  />
+                  <CircularProgress percent={totalTasks ? (completedTasks / totalTasks) * 100 : 0} />
                   <div className="w-full mt-6 space-y-2">
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-500">งานเสร็จสิ้น</span>
-                      <span className="font-semibold text-gray-800">{taskStats.completed}</span>
+                      <span className="font-semibold text-gray-800">{completedTasks}</span>
                     </div>
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-500">งานทั้งหมด</span>
-                      <span className="font-semibold text-gray-800">{taskStats.total}</span>
+                      <span className="font-semibold text-gray-800">{totalTasks}</span>
                     </div>
                     <div className="w-full bg-gray-100 rounded-full h-2 mt-2">
                       <div
                         className="bg-blue-600 h-2 rounded-full transition-all"
-                        style={{ width: `${taskStats.total ? (taskStats.completed / taskStats.total) * 100 : 0}%` }}
+                        style={{ width: `${totalTasks ? (completedTasks / totalTasks) * 100 : 0}%` }}
                       />
                     </div>
                   </div>
                 </div>
               </div>
 
+              {/* DOCUMENTS + RISK CONTROL */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="card p-6">
+                  <h2 className="text-lg font-semibold text-gray-800 mb-1">เอกสารที่ต้องติดตาม</h2>
+                  <p className="text-sm text-gray-500 mb-4">เอกสารที่รอตรวจสอบ/รอผู้บริหารอนุมัติ</p>
+                  {pendingDocuments.length === 0 ? (
+                    <EmptyRow>ไม่มีเอกสารที่ต้องติดตาม</EmptyRow>
+                  ) : (
+                    <div className="space-y-2">
+                      {pendingDocuments.slice(0, 5).map((doc) => (
+                        <Link
+                          key={doc._id}
+                          to="/documents"
+                          className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-800">{doc.title}</p>
+                            <p className="text-sm text-gray-500">{doc.department}</p>
+                          </div>
+                          <span className="text-sm font-medium text-purple-600">{doc.approvalStatus}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="card p-6">
+                  <h2 className="text-lg font-semibold text-gray-800 mb-1">ความเสี่ยง / ประเด็นที่ต้องติดตาม</h2>
+                  <p className="text-sm text-gray-500 mb-4">รายการที่ยังไม่ปิดเรื่อง</p>
+                  {openRisks.length === 0 ? (
+                    <EmptyRow>ไม่มีปัญหาหรือความเสี่ยงค้างที่คุณมีสิทธิ์มองเห็น</EmptyRow>
+                  ) : (
+                    <div className="space-y-2">
+                      {openRisks.slice(0, 5).map((risk) => (
+                        <Link
+                          key={risk._id}
+                          to="/risks"
+                          className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-800">{risk.title}</p>
+                            <p className="text-sm text-gray-500">{risk.department} · ผลกระทบ {risk.impactLevel}</p>
+                          </div>
+                          <span className="text-sm font-medium text-red-600">{risk.status}</span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* TEAM STATUS */}
+              <div className="card p-6 mb-8">
+                <h2 className="text-lg font-semibold text-gray-800 mb-1">สรุปภาระงานตามฝ่าย</h2>
+                <p className="text-sm text-gray-500 mb-4">เฉพาะฝ่ายที่คุณมีสิทธิ์มองเห็น</p>
+                {teamStatus.length === 0 ? (
+                  <EmptyRow>ยังไม่มีข้อมูลงาน</EmptyRow>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-gray-500 border-b border-gray-100">
+                          <th className="py-2 pr-4 font-medium">ฝ่าย</th>
+                          <th className="py-2 px-4 font-medium">งานทั้งหมด</th>
+                          <th className="py-2 px-4 font-medium">กำลังดำเนินการ</th>
+                          <th className="py-2 px-4 font-medium">เสร็จสิ้น</th>
+                          <th className="py-2 px-4 font-medium">ล่าช้า</th>
+                          <th className="py-2 pl-4 font-medium">% สำเร็จ</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {teamStatus.map((row) => (
+                          <tr key={row.department} className="border-b border-gray-50 last:border-0">
+                            <td className="py-3 pr-4 font-medium text-gray-800">{row.department}</td>
+                            <td className="py-3 px-4">{row.total}</td>
+                            <td className="py-3 px-4 text-blue-600">{row.inProgress}</td>
+                            <td className="py-3 px-4 text-green-600">{row.completed}</td>
+                            <td className="py-3 px-4 text-red-600">{row.overdue}</td>
+                            <td className="py-3 pl-4">
+                              {row.total ? ((row.completed / row.total) * 100).toFixed(1) : '0.0'}%
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* กิจกรรมล่าสุด */}
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold text-gray-800">กิจกรรมล่าสุด</h2>
@@ -203,7 +319,7 @@ const Dashboard = () => {
                   </Link>
                 </div>
                 {recentEvents.length === 0 ? (
-                  <p className="text-gray-500 text-sm text-center py-8">ยังไม่มีกิจกรรม</p>
+                  <EmptyRow>ยังไม่มีกิจกรรม</EmptyRow>
                 ) : (
                   <div className="space-y-3">
                     {recentEvents.map((event) => (
