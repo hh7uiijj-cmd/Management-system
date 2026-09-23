@@ -77,6 +77,7 @@ async function seed() {
   for (const person of roster) {
     const memberDoc = await Member.create({
       name: person.name,
+      nickname: person.nickname,
       department: person.department,
       position: person.position,
     });

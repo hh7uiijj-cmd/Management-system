@@ -26,7 +26,7 @@ router.post('/', auth, async (req, res) => {
   try {
     if (!canManage(req)) return res.status(403).json({ message: 'คุณไม่มีสิทธิ์เพิ่มสมาชิก' });
 
-    const { name, department, position, phone, email, workStatus, note } = req.body;
+    const { name, nickname, department, position, phone, email, workStatus, note } = req.body;
     if (!name || !department) return res.status(400).json({ message: 'กรุณากรอกชื่อและฝ่าย' });
 
     const role = req.user.role?.name;
@@ -34,7 +34,7 @@ router.post('/', auth, async (req, res) => {
       return res.status(403).json({ message: 'คุณสามารถเพิ่มสมาชิกได้เฉพาะในฝ่ายของตัวเองเท่านั้น' });
     }
 
-    const member = new Member({ name, department, position, phone, email, workStatus, note });
+    const member = new Member({ name, nickname, department, position, phone, email, workStatus, note });
     await member.save();
 
     await logAudit({ req, module: 'MEMBER', action: 'create', entityId: member._id, department: member.department, summary: `เพิ่มสมาชิก: ${member.name}` });
@@ -58,8 +58,9 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: 'คุณสามารถแก้ไขสมาชิกได้เฉพาะในฝ่ายของตัวเองเท่านั้น' });
     }
 
-    const { name, position, phone, email, workStatus, note } = req.body;
+    const { name, nickname, position, phone, email, workStatus, note } = req.body;
     if (name) member.name = name;
+    if (nickname !== undefined) member.nickname = nickname;
     if (position !== undefined) member.position = position;
     if (phone !== undefined) member.phone = phone;
     if (email !== undefined) member.email = email;

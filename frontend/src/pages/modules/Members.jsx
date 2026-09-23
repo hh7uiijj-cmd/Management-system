@@ -15,7 +15,7 @@ const Members = () => {
   const [message, setMessage] = useState({ text: '', type: '' })
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const [form, setForm] = useState({ name: '', department: '', position: '', phone: '', email: '', workStatus: MEMBER_WORK_STATUSES[0], note: '' })
+  const [form, setForm] = useState({ name: '', nickname: '', department: '', position: '', phone: '', email: '', workStatus: MEMBER_WORK_STATUSES[0], note: '' })
   const [saving, setSaving] = useState(false)
 
   const isTopTier = ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -37,14 +37,14 @@ const Members = () => {
 
   const openCreate = () => {
     setEditingId(null)
-    setForm({ name: '', department: isTopTier ? '' : user.department, position: '', phone: '', email: '', workStatus: MEMBER_WORK_STATUSES[0], note: '' })
+    setForm({ name: '', nickname: '', department: isTopTier ? '' : user.department, position: '', phone: '', email: '', workStatus: MEMBER_WORK_STATUSES[0], note: '' })
     setShowForm(true)
     setMessage({ text: '', type: '' })
   }
 
   const openEdit = (m) => {
     setEditingId(m._id)
-    setForm({ name: m.name, department: m.department, position: m.position, phone: m.phone, email: m.email, workStatus: m.workStatus, note: m.note })
+    setForm({ name: m.name, nickname: m.nickname, department: m.department, position: m.position, phone: m.phone, email: m.email, workStatus: m.workStatus, note: m.note })
     setShowForm(true)
     setMessage({ text: '', type: '' })
   }
@@ -110,6 +110,10 @@ const Members = () => {
                   <input className="input-field" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
                 </div>
                 <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อเล่น</label>
+                  <input className="input-field" value={form.nickname} onChange={(e) => setForm({ ...form, nickname: e.target.value })} />
+                </div>
+                <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">ฝ่าย</label>
                   <select className="input-field" value={form.department} onChange={(e) => setForm({ ...form, department: e.target.value })} disabled={!isTopTier} required>
                     <option value="">-- เลือกฝ่าย --</option>
@@ -157,6 +161,7 @@ const Members = () => {
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
                       <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ชื่อ-สกุล</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ชื่อเล่น</th>
                       <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ฝ่าย</th>
                       <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ตำแหน่ง</th>
                       <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">สถานะ</th>
@@ -165,10 +170,11 @@ const Members = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {members.length === 0 ? (
-                      <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">ยังไม่มีข้อมูลสมาชิก</td></tr>
+                      <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500">ยังไม่มีข้อมูลสมาชิก</td></tr>
                     ) : members.map((m) => (
                       <tr key={m._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-800">{m.name}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600">{m.nickname || '-'}</td>
                         <td className="px-6 py-4 text-sm"><DepartmentBadge department={m.department} /></td>
                         <td className="px-6 py-4 text-sm"><PositionBadge position={m.position} /></td>
                         <td className="px-6 py-4 text-sm text-gray-600">{m.workStatus}</td>

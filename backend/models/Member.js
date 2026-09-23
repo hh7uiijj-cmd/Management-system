@@ -7,6 +7,11 @@ const memberSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
+  nickname: {
+    type: String,
+    trim: true,
+    default: '',
+  },
   department: {
     type: String,
     enum: DEPARTMENTS,
