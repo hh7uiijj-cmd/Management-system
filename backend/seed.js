@@ -58,7 +58,7 @@ async function seed() {
   // ผู้ดูแลระบบ (มองเห็นทุกฝ่าย ไม่ต้องระบุ department)
   await User.create({
     name: 'Admin',
-    email: 'daocha',
+    email: 'DaoCha@gmail.com',
     password: 'ChaDao',
     role: adminRole._id,
   });
@@ -92,7 +92,7 @@ async function seed() {
   }
 
   console.log('Seed completed!');
-  console.log('Admin login: DaoCha / ChaDao');
+  console.log('Admin login: DaoCha@gmail.com / ChaDao');
   console.log(`สมาชิกทั้งหมด ${roster.length} คน — login ด้วย u67110110553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>`);
   await mongoose.disconnect();
 }
