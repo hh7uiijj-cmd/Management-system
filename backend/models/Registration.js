@@ -30,6 +30,19 @@ const registrationSchema = new mongoose.Schema({
     trim: true,
     default: '',
   },
+  checkedIn: {
+    type: Boolean,
+    default: false,
+  },
+  checkedInAt: {
+    type: Date,
+    default: null,
+  },
+  checkedInBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

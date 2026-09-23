@@ -5,6 +5,22 @@ const Role = require('../models/Role');
 const auth = require('../middleware/auth');
 const checkPermission = require('../middleware/checkPermission');
 
+// GET /api/users/directory - รายชื่อผู้ใช้แบบย่อ สำหรับเลือกผู้รับผิดชอบงาน (ทุกคนที่ login แล้วเรียกได้)
+// จำกัดเฉพาะฝ่ายตัวเอง ยกเว้น admin/president/vice_president ที่เห็นทุกฝ่าย
+router.get('/directory', auth, async (req, res) => {
+  try {
+    const role = req.user.role?.name;
+    const filter = ['admin', 'president', 'vice_president'].includes(role)
+      ? {}
+      : { department: req.user.department };
+    const users = await User.find(filter).select('name email department').sort({ name: 1 });
+    res.json(users);
+  } catch (error) {
+    console.error('Get user directory error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
+  }
+});
+
 // GET /api/users - list all users
 router.get('/', auth, checkPermission('manage_users'), async (req, res) => {
   try {
@@ -14,6 +30,7 @@ router.get('/', auth, checkPermission('manage_users'), async (req, res) => {
       name: u.name,
       email: u.email,
       role: u.role,
+      department: u.department,
       createdAt: u.createdAt,
     })));
   } catch (error) {
@@ -22,26 +39,26 @@ router.get('/', auth, checkPermission('manage_users'), async (req, res) => {
   }
 });
 
-// PUT /api/users/:id/role - update user role
+// PUT /api/users/:id/role - update user role and/or department
 router.put('/:id/role', auth, checkPermission('manage_users'), async (req, res) => {
   try {
-    const { roleId } = req.body;
-
-    if (!roleId) {
-      return res.status(400).json({ message: 'กรุณาระบุ Role' });
-    }
-
-    const role = await Role.findById(roleId);
-    if (!role) {
-      return res.status(404).json({ message: 'ไม่พบ Role ที่ระบุ' });
-    }
+    const { roleId, department, member } = req.body;
 
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'ไม่พบผู้ใช้นี้' });
     }
 
-    user.role = roleId;
+    if (roleId) {
+      const role = await Role.findById(roleId);
+      if (!role) {
+        return res.status(404).json({ message: 'ไม่พบ Role ที่ระบุ' });
+      }
+      user.role = roleId;
+    }
+    if (department !== undefined) user.department = department;
+    if (member !== undefined) user.member = member;
+
     await user.save();
     await user.populate('role', 'name displayName permissions');
 
@@ -50,6 +67,8 @@ router.put('/:id/role', auth, checkPermission('manage_users'), async (req, res) 
       name: user.name,
       email: user.email,
       role: user.role,
+      department: user.department,
+      member: user.member,
       createdAt: user.createdAt,
     });
   } catch (error) {

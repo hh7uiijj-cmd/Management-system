@@ -4,14 +4,22 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const Role = require('../models/Role');
 const auth = require('../middleware/auth');
+const { DEPARTMENTS } = require('../config/constants');
 
 // POST /api/auth/register
+// หมายเหตุด้านความปลอดภัย: การสมัครสมาชิกสาธารณะจะได้ role 'member' เสมอ
+// ไม่รับ roleId จาก client เพื่อป้องกันการยกระดับสิทธิ์ตัวเอง — การเปลี่ยน role/department
+// ทำได้โดย admin เท่านั้นผ่าน PUT /api/users/:id/role
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, roleId } = req.body;
+    const { name, email, password, department } = req.body;
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !department) {
       return res.status(400).json({ message: 'กรุณากรอกข้อมูลให้ครบถ้วน' });
+    }
+
+    if (!DEPARTMENTS.includes(department)) {
+      return res.status(400).json({ message: 'ฝ่ายที่เลือกไม่ถูกต้อง' });
     }
 
     const existingUser = await User.findOne({ email });
@@ -19,18 +27,12 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'อีเมลนี้ถูกใช้งานแล้ว' });
     }
 
-    let role;
-    if (roleId) {
-      role = await Role.findById(roleId);
-    } else {
-      role = await Role.findOne({ name: 'member' });
-    }
-
+    const role = await Role.findOne({ name: 'member' });
     if (!role) {
-      return res.status(400).json({ message: 'ไม่พบ Role ที่ระบุ' });
+      return res.status(400).json({ message: 'ไม่พบ Role เริ่มต้นของระบบ' });
     }
 
-    const user = new User({ name, email, password, role: role._id });
+    const user = new User({ name, email, password, role: role._id, department });
     await user.save();
 
     const populatedUser = await User.findById(user._id).populate('role');
@@ -48,6 +50,7 @@ router.post('/register', async (req, res) => {
         name: populatedUser.name,
         email: populatedUser.email,
         role: populatedUser.role,
+        department: populatedUser.department,
         createdAt: populatedUser.createdAt,
       },
     });
@@ -89,6 +92,7 @@ router.post('/login', async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        department: user.department,
         createdAt: user.createdAt,
       },
     });
@@ -106,6 +110,7 @@ router.get('/me', auth, async (req, res) => {
       name: req.user.name,
       email: req.user.email,
       role: req.user.role,
+      department: req.user.department,
       createdAt: req.user.createdAt,
     });
   } catch (error) {

@@ -34,7 +34,7 @@ const Login = () => {
                 d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">ระบบจัดการกิจกรรม</h1>
+          <h1 className="text-2xl font-bold text-gray-800">ระบบจัดการ "แฟนพันธุ์แท้จิตวิทยา ครั้งที่ 20"</h1>
           <p className="text-gray-500 mt-1 text-sm">กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p>
         </div>
 
@@ -86,9 +86,11 @@ const Login = () => {
         </form>
 
         <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500 font-medium mb-2">บัญชีสำหรับทดสอบ:</p>
+          <p className="text-xs text-gray-500 font-medium mb-2">บัญชีสำหรับทดสอบ (หลัง npm run seed):</p>
           <p className="text-xs text-gray-600">Admin: admin@system.com / admin1234</p>
-          <p className="text-xs text-gray-600">Head: head@system.com / admin1234</p>
+          <p className="text-xs text-gray-600">ประธาน: president@system.com / president1234</p>
+          <p className="text-xs text-gray-600">หัวหน้าฝ่าย 1: headdept1@system.com / head1234</p>
+          <p className="text-xs text-gray-600">สมาชิกฝ่าย 1: memberdept1@system.com / member1234</p>
         </div>
       </div>
     </div>

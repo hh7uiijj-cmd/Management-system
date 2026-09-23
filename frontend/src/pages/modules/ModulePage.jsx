@@ -1,0 +1,304 @@
+import { useState, useEffect } from 'react'
+import Navbar from '../../components/Navbar'
+import Sidebar from '../../components/Sidebar'
+import { useAuth } from '../../context/AuthContext'
+import api from '../../api/axios'
+
+// หน้า CRUD กลางที่ใช้ config ขับเคลื่อน (list / create / edit / delete / approve)
+// ใช้ร่วมกันสำหรับโมดูลใหม่ทั้งหมด (T/D/L/B/RI/E/M/A) เพื่อลดโค้ดซ้ำซ้อนระหว่าง 8 โมดูลที่มีรูปแบบเดียวกัน
+// สิทธิ์จริงถูกบังคับที่ server เสมอ — ฝั่ง UI นี้แค่ซ่อน/แสดงปุ่มให้เหมาะสมเท่านั้น
+const emptyFromFields = (fields) => {
+  const obj = {}
+  fields.forEach((f) => { obj[f.name] = f.default ?? '' })
+  return obj
+}
+
+const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', allowEdit = true }) => {
+  const { user } = useAuth()
+  const [items, setItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [message, setMessage] = useState({ text: '', type: '' })
+  const [showForm, setShowForm] = useState(false)
+  const [editingId, setEditingId] = useState(null)
+  const [form, setForm] = useState(emptyFromFields(fields))
+  const [saving, setSaving] = useState(false)
+
+  const isTopTier = ['admin', 'president', 'vice_president'].includes(user?.role?.name)
+  const isDeptLead = ['head', 'secretary'].includes(user?.role?.name)
+  const isMember = user?.role?.name === 'member'
+
+  useEffect(() => { fetchItems() }, [])
+
+  const fetchItems = async () => {
+    setLoading(true)
+    try {
+      const { data } = await api.get(endpoint)
+      setItems(data)
+    } catch (err) {
+      console.error(`Fetch ${endpoint} error:`, err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const resolveOptions = async (field) => {
+    if (!field.optionsEndpoint) return field.options || []
+    try {
+      const { data } = await api.get(field.optionsEndpoint)
+      return data.map(field.mapOption)
+    } catch {
+      return []
+    }
+  }
+
+  const [dynamicOptions, setDynamicOptions] = useState({})
+  useEffect(() => {
+    fields.forEach(async (f) => {
+      if (f.optionsEndpoint) {
+        const opts = await resolveOptions(f)
+        setDynamicOptions((prev) => ({ ...prev, [f.name]: opts }))
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const openCreate = () => {
+    setEditingId(null)
+    setForm(emptyFromFields(fields))
+    setShowForm(true)
+    setMessage({ text: '', type: '' })
+  }
+
+  const openEdit = (item) => {
+    setEditingId(item._id)
+    const next = {}
+    fields.forEach((f) => {
+      const raw = item[f.name]
+      if (f.type === 'ref') next[f.name] = raw?._id || raw || ''
+      else if (f.type === 'multiref') next[f.name] = (raw || []).map((r) => r?._id || r)
+      else if (f.type === 'date' && raw) next[f.name] = new Date(raw).toISOString().slice(0, 10)
+      else next[f.name] = raw ?? ''
+    })
+    setForm(next)
+    setShowForm(true)
+    setMessage({ text: '', type: '' })
+  }
+
+  const handleChange = (name, value) => setForm((prev) => ({ ...prev, [name]: value }))
+
+  const canEditItem = (item) => {
+    if (isTopTier && user.role.name === 'admin') return true
+    if (['president', 'vice_president'].includes(user.role.name)) return false
+    if (isDeptLead) return item.department === user.department
+    if (isMember) {
+      const ownerId = item[ownerField]?._id || item[ownerField]
+      return item.department === user.department && String(ownerId) === String(user._id)
+    }
+    return false
+  }
+
+  const canCreate = user.role.name !== 'president' && user.role.name !== 'vice_president'
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    setMessage({ text: '', type: '' })
+    try {
+      const payload = { ...form }
+      if (!payload.department && !isTopTier) payload.department = user.department
+      if (editingId) {
+        await api.put(`${endpoint}/${editingId}`, payload)
+        setMessage({ text: 'บันทึกการแก้ไขสำเร็จ', type: 'success' })
+      } else {
+        await api.post(endpoint, payload)
+        setMessage({ text: 'เพิ่มรายการสำเร็จ', type: 'success' })
+      }
+      setShowForm(false)
+      fetchItems()
+    } catch (err) {
+      setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('ต้องการลบรายการนี้หรือไม่?')) return
+    try {
+      await api.delete(`${endpoint}/${id}`)
+      setMessage({ text: 'ลบรายการสำเร็จ', type: 'success' })
+      fetchItems()
+    } catch (err) {
+      setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    }
+  }
+
+  const handleApprove = async (id, status) => {
+    try {
+      await api.put(`${endpoint}/${id}/${approveEndpointSuffix}`, { status })
+      setMessage({ text: 'อัปเดตสถานะสำเร็จ', type: 'success' })
+      fetchItems()
+    } catch (err) {
+      setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    }
+  }
+
+  const renderFieldInput = (f) => {
+    const options = f.optionsEndpoint ? (dynamicOptions[f.name] || []) : (f.options || [])
+    if (f.type === 'select' || f.type === 'ref') {
+      return (
+        <select
+          className="input-field"
+          value={form[f.name] || ''}
+          onChange={(e) => handleChange(f.name, e.target.value)}
+          required={f.required}
+        >
+          <option value="">-- เลือก{f.label} --</option>
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      )
+    }
+    if (f.type === 'multiref') {
+      return (
+        <select
+          multiple
+          className="input-field h-28"
+          value={form[f.name] || []}
+          onChange={(e) => handleChange(f.name, Array.from(e.target.selectedOptions).map((o) => o.value))}
+        >
+          {options.map((opt) => (
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      )
+    }
+    if (f.type === 'textarea') {
+      return (
+        <textarea
+          className="input-field"
+          rows={3}
+          value={form[f.name] || ''}
+          onChange={(e) => handleChange(f.name, e.target.value)}
+        />
+      )
+    }
+    return (
+      <input
+        type={f.type || 'text'}
+        className="input-field"
+        value={form[f.name] || ''}
+        onChange={(e) => handleChange(f.name, e.target.value)}
+        required={f.required}
+      />
+    )
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      <Navbar />
+      <div className="flex flex-1">
+        <Sidebar />
+        <main className="flex-1 p-8">
+          <div className="mb-6 flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+              <p className="text-gray-500 mt-1">ทั้งหมด {items.length} รายการ</p>
+            </div>
+            {canCreate && (
+              <button onClick={openCreate} className="btn-primary">+ เพิ่มรายการ</button>
+            )}
+          </div>
+
+          {message.text && (
+            <div className={`mb-4 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700'}`}>
+              {message.text}
+            </div>
+          )}
+
+          {showForm && (
+            <div className="card p-6 mb-6">
+              <h2 className="font-semibold text-gray-800 mb-4">{editingId ? 'แก้ไขรายการ' : 'เพิ่มรายการใหม่'}</h2>
+              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {fields.filter((f) => !f.visible || f.visible(user)).map((f) => (
+                  <div key={f.name} className={f.type === 'textarea' ? 'md:col-span-2' : ''}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
+                    {renderFieldInput(f)}
+                  </div>
+                ))}
+                <div className="md:col-span-2 flex gap-2 pt-2">
+                  <button type="submit" disabled={saving} className="btn-primary">
+                    {saving ? 'กำลังบันทึก...' : 'บันทึก'}
+                  </button>
+                  <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                    ยกเลิก
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="flex items-center justify-center h-48">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+            </div>
+          ) : (
+            <div className="card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      {columns.map((c) => (
+                        <th key={c.key} className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">{c.label}</th>
+                      ))}
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">การดำเนินการ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {items.length === 0 ? (
+                      <tr>
+                        <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-gray-500">ยังไม่มีข้อมูล</td>
+                      </tr>
+                    ) : items.map((item) => (
+                      <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                        {columns.map((c) => (
+                          <td key={c.key} className="px-6 py-4 text-sm text-gray-700">
+                            {c.render ? c.render(item) : (item[c.key] ?? '-')}
+                          </td>
+                        ))}
+                        <td className="px-6 py-4 space-x-2 whitespace-nowrap">
+                          {canEditItem(item) && (
+                            <>
+                              {allowEdit && (
+                                <button onClick={() => openEdit(item)} className="text-xs px-3 py-1.5 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50">แก้ไข</button>
+                              )}
+                              <button onClick={() => handleDelete(item._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
+                            </>
+                          )}
+                          {canApprove && (isTopTier || isDeptLead) && (
+                            <select
+                              className="text-xs border border-gray-300 rounded-lg px-2 py-1"
+                              value={item[approveField] || ''}
+                              onChange={(e) => handleApprove(item._id, e.target.value)}
+                            >
+                              {approveOptions.map((opt) => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    </div>
+  )
+}
+
+export default ModulePage

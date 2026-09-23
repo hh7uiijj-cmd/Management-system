@@ -203,6 +203,40 @@ router.put(
   }
 );
 
+// PUT /api/registrations/:id/checkin - เช็คอินผู้ลงทะเบียน (REGISTRATION - R)
+router.put(
+  '/:id/checkin',
+  auth,
+  checkPermission('approve_registrations'),
+  async (req, res) => {
+    try {
+      const registration = await Registration.findById(req.params.id);
+      if (!registration) {
+        return res.status(404).json({ message: 'ไม่พบการลงทะเบียนนี้' });
+      }
+      if (registration.status !== 'approved') {
+        return res.status(400).json({ message: 'เช็คอินได้เฉพาะผู้ที่ได้รับการอนุมัติแล้วเท่านั้น' });
+      }
+
+      registration.checkedIn = true;
+      registration.checkedInAt = new Date();
+      registration.checkedInBy = req.user._id;
+
+      await registration.save();
+      await registration.populate([
+        { path: 'user', select: 'name email' },
+        { path: 'event', select: 'title date location' },
+        { path: 'checkedInBy', select: 'name' },
+      ]);
+
+      res.json(registration);
+    } catch (error) {
+      console.error('Check-in error:', error);
+      res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
+    }
+  }
+);
+
 // PUT /api/registrations/:id/reject - reject registration
 router.put(
   '/:id/reject',
