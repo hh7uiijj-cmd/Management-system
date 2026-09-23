@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'
+import CircularProgress from '../components/CircularProgress'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 
@@ -23,18 +24,22 @@ const Dashboard = () => {
   const { user, hasPermission } = useAuth()
   const [stats, setStats] = useState({ totalEvents: 0, myRegistrations: 0, pendingApprovals: 0 })
   const [recentEvents, setRecentEvents] = useState([])
+  const [taskStats, setTaskStats] = useState({ completed: 0, total: 0 })
+  const [urgentTasks, setUrgentTasks] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [eventsRes, myRegsRes] = await Promise.all([
+        const [eventsRes, myRegsRes, tasksRes] = await Promise.all([
           api.get('/api/events'),
           api.get('/api/registrations/my'),
+          api.get('/api/tasks').catch(() => ({ data: [] })),
         ])
 
         const events = eventsRes.data
         const myRegs = myRegsRes.data
+        const tasks = tasksRes.data
 
         let pendingCount = 0
         if (hasPermission('approve_registrations')) {
@@ -50,6 +55,19 @@ const Dashboard = () => {
           pendingApprovals: pendingCount,
         })
         setRecentEvents(events.slice(0, 5))
+
+        setTaskStats({
+          completed: tasks.filter(t => t.status === 'เสร็จสิ้น').length,
+          total: tasks.length,
+        })
+
+        const now = new Date()
+        const in3Days = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000)
+        const urgent = tasks
+          .filter(t => t.status !== 'เสร็จสิ้น' && t.status !== 'ยกเลิก' && new Date(t.deadline) <= in3Days)
+          .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+          .slice(0, 5)
+        setUrgentTasks(urgent)
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {
@@ -124,6 +142,57 @@ const Dashboard = () => {
                     }
                   />
                 )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="card p-6">
+                  <h2 className="text-lg font-semibold text-gray-800 mb-1">งานเร่งด่วน</h2>
+                  <p className="text-sm text-gray-500 mb-4">งานที่ใกล้ถึงกำหนดภายใน 3 วัน</p>
+                  {urgentTasks.length === 0 ? (
+                    <p className="text-gray-500 text-sm text-center py-8">ไม่มีงานเร่งด่วน</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {urgentTasks.map((task) => (
+                        <Link
+                          key={task._id}
+                          to="/tasks"
+                          className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                        >
+                          <div>
+                            <p className="font-medium text-gray-800">{task.title}</p>
+                            <p className="text-sm text-gray-500">{task.department}</p>
+                          </div>
+                          <span className="text-sm font-medium text-orange-600">
+                            {formatDate(task.deadline)}
+                          </span>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="card p-6 flex flex-col items-center justify-center">
+                  <h2 className="text-lg font-semibold text-gray-800 mb-4 self-start">อัตราความสำเร็จของงาน</h2>
+                  <CircularProgress
+                    percent={taskStats.total ? (taskStats.completed / taskStats.total) * 100 : 0}
+                  />
+                  <div className="w-full mt-6 space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">งานเสร็จสิ้น</span>
+                      <span className="font-semibold text-gray-800">{taskStats.completed}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-500">งานทั้งหมด</span>
+                      <span className="font-semibold text-gray-800">{taskStats.total}</span>
+                    </div>
+                    <div className="w-full bg-gray-100 rounded-full h-2 mt-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all"
+                        style={{ width: `${taskStats.total ? (taskStats.completed / taskStats.total) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="card p-6">
