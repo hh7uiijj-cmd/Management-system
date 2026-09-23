@@ -54,7 +54,7 @@ const MyRegistrations = () => {
 
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
           ) : registrations.length === 0 ? (
             <div className="card p-12 text-center">
@@ -91,7 +91,7 @@ const MyRegistrations = () => {
                             <div>
                               <Link
                                 to={`/events/${reg.event?._id}`}
-                                className="font-medium text-blue-600 hover:text-blue-700"
+                                className="font-medium text-indigo-600 hover:text-indigo-700"
                               >
                                 {reg.event?.title || 'กิจกรรมที่ถูกลบ'}
                               </Link>

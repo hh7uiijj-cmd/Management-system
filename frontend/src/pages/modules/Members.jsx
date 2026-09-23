@@ -3,6 +3,7 @@ import Navbar from '../../components/Navbar'
 import Sidebar from '../../components/Sidebar'
 import DepartmentBadge from '../../components/DepartmentBadge'
 import { PositionBadge } from '../../components/PositionBadge'
+import StatusBadge from '../../components/StatusBadge'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/axios'
 import { DEPARTMENTS, MEMBER_WORK_STATUSES } from '../../constants'
@@ -170,7 +171,7 @@ const Members = () => {
 
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
           ) : (
             <div className="card overflow-hidden">
@@ -195,11 +196,11 @@ const Members = () => {
                         <td className="px-6 py-4 text-sm text-gray-600">{m.nickname || '-'}</td>
                         <td className="px-6 py-4 text-sm"><DepartmentBadge department={m.department} /></td>
                         <td className="px-6 py-4 text-sm"><PositionBadge position={m.position} /></td>
-                        <td className="px-6 py-4 text-sm text-gray-600">{m.workStatus}</td>
+                        <td className="px-6 py-4 text-sm"><StatusBadge status={m.workStatus} /></td>
                         <td className="px-6 py-4 space-x-2 whitespace-nowrap">
                           {canManage && (
                             <>
-                              <button onClick={() => openEdit(m)} className="text-xs px-3 py-1.5 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50">แก้ไข</button>
+                              <button onClick={() => openEdit(m)} className="text-xs px-3 py-1.5 border border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50">แก้ไข</button>
                               <button onClick={() => handleDelete(m._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
                             </>
                           )}

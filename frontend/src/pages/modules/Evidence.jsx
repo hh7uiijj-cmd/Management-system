@@ -19,7 +19,16 @@ const columns = [
 ]
 
 const EvidencePage = () => (
-  <ModulePage title="หลักฐาน (Evidence)" endpoint="/api/evidence" fields={fields} columns={columns} ownerField="uploadedBy" allowEdit={false} />
+  <ModulePage
+    title="หลักฐาน (Evidence)"
+    endpoint="/api/evidence"
+    fields={fields}
+    columns={columns}
+    ownerField="uploadedBy"
+    allowEdit={false}
+    searchKeys={['description', 'department']}
+    sorts={[{ key: 'createdAt', label: 'วันที่อัปโหลด', defaultDir: 'desc' }]}
+  />
 )
 
 export default EvidencePage

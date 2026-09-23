@@ -1,5 +1,6 @@
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
+import StatusBadge from '../../components/StatusBadge'
 import { DEPARTMENTS, LETTER_STATUSES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -21,7 +22,7 @@ const columns = [
   { key: 'subject', label: 'เรื่อง' },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'sentTo', label: 'ส่งถึง' },
-  { key: 'status', label: 'สถานะ' },
+  { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
   { key: 'dueDate', label: 'กำหนดตอบกลับ', render: (item) => item.dueDate ? new Date(item.dueDate).toLocaleDateString('th-TH') : '-' },
 ]
 

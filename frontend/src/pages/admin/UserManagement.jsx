@@ -84,7 +84,7 @@ const UserManagement = () => {
 
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
           ) : (
             <div className="card overflow-hidden">
@@ -109,7 +109,7 @@ const UserManagement = () => {
                         <td className="px-6 py-4">
                           <div className="font-medium text-gray-800">{user.name}</div>
                           {user._id === currentUser?._id && (
-                            <span className="text-xs text-blue-500">(บัญชีของคุณ)</span>
+                            <span className="text-xs text-indigo-500">(บัญชีของคุณ)</span>
                           )}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">{user.email}</td>

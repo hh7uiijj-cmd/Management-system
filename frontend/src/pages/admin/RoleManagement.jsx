@@ -128,7 +128,7 @@ const RoleManagement = () => {
 
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
           ) : (
             <div className="card overflow-hidden">
@@ -159,7 +159,7 @@ const RoleManagement = () => {
                           ) : (
                             <div className="flex flex-wrap gap-1">
                               {role.permissions?.map((perm) => (
-                                <span key={perm} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-blue-100 text-blue-700">
+                                <span key={perm} className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-indigo-100 text-indigo-700">
                                   {permLabel[perm] || perm}
                                 </span>
                               ))}
@@ -170,7 +170,7 @@ const RoleManagement = () => {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => openEdit(role)}
-                              className="text-xs px-2 py-1 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 transition-colors"
+                              className="text-xs px-2 py-1 border border-indigo-500 text-indigo-600 rounded hover:bg-indigo-50 transition-colors"
                             >
                               แก้ไข
                             </button>
@@ -234,7 +234,7 @@ const RoleManagement = () => {
                         type="checkbox"
                         checked={form.permissions.includes(perm.key)}
                         onChange={() => togglePermission(perm.key)}
-                        className="w-4 h-4 text-blue-600 rounded"
+                        className="w-4 h-4 text-indigo-600 rounded"
                       />
                       <div>
                         <span className="text-sm font-medium text-gray-700">{perm.label}</span>

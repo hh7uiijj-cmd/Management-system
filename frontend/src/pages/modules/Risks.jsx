@@ -1,5 +1,6 @@
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
+import StatusBadge from '../../components/StatusBadge'
 import { DEPARTMENTS, RISK_ISSUE_TYPES, IMPACT_LEVELS, LIKELIHOOD_LEVELS, RISK_ISSUE_STATUSES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -18,15 +19,26 @@ const fields = [
 
 const columns = [
   { key: 'title', label: 'หัวข้อ' },
-  { key: 'type', label: 'ประเภท' },
+  { key: 'type', label: 'ประเภท', render: (item) => <StatusBadge status={item.type} /> },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
-  { key: 'impactLevel', label: 'ผลกระทบ' },
-  { key: 'likelihoodLevel', label: 'โอกาสเกิด' },
-  { key: 'status', label: 'สถานะ' },
+  { key: 'impactLevel', label: 'ผลกระทบ', render: (item) => <StatusBadge status={item.impactLevel} /> },
+  { key: 'likelihoodLevel', label: 'โอกาสเกิด', render: (item) => <StatusBadge status={item.likelihoodLevel} /> },
+  { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
 ]
 
 const Risks = () => (
-  <ModulePage title="ความเสี่ยง/ปัญหา (Risk & Issue)" endpoint="/api/risks" fields={fields} columns={columns} />
+  <ModulePage
+    title="ความเสี่ยง/ปัญหา (Risk & Issue)"
+    endpoint="/api/risks"
+    fields={fields}
+    columns={columns}
+    searchKeys={['title', 'department']}
+    filters={[
+      { key: 'type', label: 'ประเภท', options: RISK_ISSUE_TYPES },
+      { key: 'status', label: 'สถานะ', options: RISK_ISSUE_STATUSES },
+    ]}
+    sorts={[{ key: 'createdAt', label: 'วันที่สร้าง', defaultDir: 'desc' }]}
+  />
 )
 
 export default Risks

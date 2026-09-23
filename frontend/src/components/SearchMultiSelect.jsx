@@ -26,7 +26,7 @@ const SearchMultiSelect = ({ options, value, onChange }) => {
           {selectedOptions.map((opt) => (
             <span
               key={opt.value}
-              className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full"
+              className="inline-flex items-center gap-1 bg-blue-50 text-indigo-700 text-xs px-2 py-1 rounded-full"
             >
               {opt.label}
               <button

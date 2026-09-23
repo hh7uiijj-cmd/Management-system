@@ -1,5 +1,6 @@
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
+import StatusBadge from '../../components/StatusBadge'
 import { DEPARTMENTS, DOCUMENT_CATEGORIES, DOCUMENT_APPROVAL_STATUSES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -16,7 +17,7 @@ const columns = [
   { key: 'title', label: 'ชื่อเอกสาร' },
   { key: 'category', label: 'หมวดหมู่' },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
-  { key: 'approvalStatus', label: 'สถานะอนุมัติ' },
+  { key: 'approvalStatus', label: 'สถานะอนุมัติ', render: (item) => <StatusBadge status={item.approvalStatus} /> },
   { key: 'uploadedBy', label: 'ผู้อัปโหลด', render: (item) => item.uploadedBy?.name || '-' },
 ]
 

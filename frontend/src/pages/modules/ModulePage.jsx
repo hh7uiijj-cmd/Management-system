@@ -341,7 +341,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
 
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
           ) : (
             <div className="card overflow-hidden">
@@ -358,8 +358,17 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
                   <tbody className="divide-y divide-gray-100">
                     {visibleItems.length === 0 ? (
                       <tr>
-                        <td colSpan={columns.length + 1} className="px-6 py-12 text-center text-gray-500">
-                          {items.length === 0 ? 'ยังไม่มีข้อมูล' : 'ไม่พบรายการที่ตรงกับเงื่อนไขการค้นหา'}
+                        <td colSpan={columns.length + 1} className="px-6 py-16 text-center">
+                          <div className="flex flex-col items-center gap-2 text-gray-400">
+                            <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                            </div>
+                            <p className="text-sm text-gray-500">
+                              {items.length === 0 ? 'ยังไม่มีข้อมูล' : 'ไม่พบรายการที่ตรงกับเงื่อนไขการค้นหา'}
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     ) : visibleItems.map((item) => (
@@ -373,7 +382,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
                           {canEditItem(item) && (
                             <>
                               {allowEdit && (
-                                <button onClick={() => openEdit(item)} className="text-xs px-3 py-1.5 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50">แก้ไข</button>
+                                <button onClick={() => openEdit(item)} className="text-xs px-3 py-1.5 border border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50">แก้ไข</button>
                               )}
                               <button onClick={() => handleDelete(item._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
                             </>

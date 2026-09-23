@@ -1,5 +1,6 @@
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
+import StatusBadge from '../../components/StatusBadge'
 import { DEPARTMENTS, TASK_STATUSES, TASK_PRIORITIES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
@@ -24,8 +25,8 @@ const columns = [
   { key: 'reviewer', label: 'ผู้อนุมัติ', render: (item) => item.reviewer?.name || '-' },
   { key: 'startDate', label: 'วันที่เริ่ม', render: (item) => item.startDate ? new Date(item.startDate).toLocaleDateString('th-TH') : '-' },
   { key: 'deadline', label: 'กำหนดส่ง', render: (item) => item.deadline ? new Date(item.deadline).toLocaleDateString('th-TH') : '-' },
-  { key: 'status', label: 'สถานะ' },
-  { key: 'priority', label: 'ความสำคัญ' },
+  { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
+  { key: 'priority', label: 'ความสำคัญ', render: (item) => <StatusBadge status={item.priority} /> },
 ]
 
 const Tasks = () => (

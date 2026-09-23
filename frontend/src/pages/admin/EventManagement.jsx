@@ -150,7 +150,7 @@ const EventManagement = () => {
 
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
           ) : (
             <div className="card overflow-hidden">
@@ -195,7 +195,7 @@ const EventManagement = () => {
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => openEdit(event)}
-                              className="text-xs px-2 py-1 border border-blue-500 text-blue-600 rounded hover:bg-blue-50 transition-colors"
+                              className="text-xs px-2 py-1 border border-indigo-500 text-indigo-600 rounded hover:bg-indigo-50 transition-colors"
                             >
                               แก้ไข
                             </button>

@@ -85,7 +85,7 @@ const Events = () => {
 
           {loading ? (
             <div className="flex items-center justify-center h-48">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
           ) : activeEvents.length === 0 ? (
             <div className="card p-12 text-center">
@@ -146,7 +146,7 @@ const Events = () => {
                       <div className="flex items-center space-x-2">
                         <Link
                           to={`/events/${event._id}`}
-                          className="flex-1 text-center py-2 px-3 text-sm border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-medium"
+                          className="flex-1 text-center py-2 px-3 text-sm border border-indigo-600 text-indigo-600 rounded-lg hover:bg-indigo-50 transition-colors font-medium"
                         >
                           ดูรายละเอียด
                         </Link>

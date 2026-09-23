@@ -26,7 +26,18 @@ const columns = [
 ]
 
 const Budgets = () => (
-  <ModulePage title="งบประมาณ (Budget)" endpoint="/api/budgets" fields={fields} columns={columns} />
+  <ModulePage
+    title="งบประมาณ (Budget)"
+    endpoint="/api/budgets"
+    fields={fields}
+    columns={columns}
+    searchKeys={['item', 'department']}
+    filters={[{ key: 'category', label: 'หมวดหมู่', options: BUDGET_CATEGORIES }]}
+    sorts={[
+      { key: 'createdAt', label: 'วันที่สร้าง', defaultDir: 'desc' },
+      { key: 'actualCost', label: 'ค่าใช้จ่ายจริง', defaultDir: 'desc' },
+    ]}
+  />
 )
 
 export default Budgets
