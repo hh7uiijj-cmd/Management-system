@@ -152,6 +152,26 @@ router.get(
   }
 );
 
+// GET /api/registrations/stats - aggregate counts for dashboard (total + checked-in)
+router.get(
+  '/stats',
+  auth,
+  checkPermission('approve_registrations'),
+  async (req, res) => {
+    try {
+      const [total, checkedIn] = await Promise.all([
+        Registration.countDocuments({}),
+        Registration.countDocuments({ checkedIn: true }),
+      ]);
+
+      res.json({ total, checkedIn });
+    } catch (error) {
+      console.error('Get registration stats error:', error);
+      res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
+    }
+  }
+);
+
 // GET /api/registrations/pending - all pending registrations (for approval page)
 router.get(
   '/pending',

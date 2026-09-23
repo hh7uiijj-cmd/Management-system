@@ -41,6 +41,7 @@ const Dashboard = () => {
   const [budgets, setBudgets] = useState([])
   const [risks, setRisks] = useState([])
   const [evidence, setEvidence] = useState([])
+  const [registrationStats, setRegistrationStats] = useState(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +55,7 @@ const Dashboard = () => {
           budgetsRes,
           risksRes,
           evidenceRes,
+          regStatsRes,
         ] = await Promise.all([
           api.get('/api/events').catch(() => empty),
           api.get('/api/tasks').catch(() => empty),
@@ -62,6 +64,7 @@ const Dashboard = () => {
           api.get('/api/budgets').catch(() => empty),
           api.get('/api/risks').catch(() => empty),
           api.get('/api/evidence').catch(() => empty),
+          api.get('/api/registrations/stats').catch(() => ({ data: null })),
         ])
 
         setRecentEvents(eventsRes.data.slice(0, 5))
@@ -71,6 +74,7 @@ const Dashboard = () => {
         setBudgets(budgetsRes.data)
         setRisks(risksRes.data)
         setEvidence(evidenceRes.data)
+        setRegistrationStats(regStatsRes.data)
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {
@@ -169,6 +173,12 @@ const Dashboard = () => {
                   value={`${formatMoney(totalActualCost)} บาท`}
                   color="text-red-600"
                 />
+                {registrationStats && (
+                  <>
+                    <MiniStat label="ผู้ลงทะเบียนรวม" value={registrationStats.total} color="text-blue-600" />
+                    <MiniStat label="เช็คอินแล้ว" value={registrationStats.checkedIn} color="text-green-600" />
+                  </>
+                )}
               </div>
 
               {/* PRIORITY + PROGRESS */}
