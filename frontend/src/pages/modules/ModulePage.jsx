@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import Navbar from '../../components/Navbar'
 import Sidebar from '../../components/Sidebar'
 import SearchMultiSelect from '../../components/SearchMultiSelect'
+import SearchSelect from '../../components/SearchSelect'
 import { useAuth } from '../../context/AuthContext'
 import api from '../../api/axios'
 
@@ -82,7 +83,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
     const next = {}
     fields.forEach((f) => {
       const raw = item[f.name]
-      if (f.type === 'ref') next[f.name] = raw?._id || raw || ''
+      if (f.type === 'ref' || f.type === 'searchref') next[f.name] = raw?._id || raw || ''
       else if (f.type === 'multiref') next[f.name] = (raw || []).map((r) => r?._id || r)
       else if (f.type === 'date' && raw) next[f.name] = new Date(raw).toISOString().slice(0, 10)
       else next[f.name] = raw ?? ''
@@ -173,6 +174,16 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
           options={options}
           value={form[f.name] || []}
           onChange={(next) => handleChange(f.name, next)}
+        />
+      )
+    }
+    if (f.type === 'searchref') {
+      return (
+        <SearchSelect
+          options={options}
+          value={form[f.name] || ''}
+          onChange={(next) => handleChange(f.name, next)}
+          placeholder={`-- เลือก${f.label} --`}
         />
       )
     }

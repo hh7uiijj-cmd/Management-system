@@ -5,12 +5,14 @@ import { DEPARTMENTS, TASK_STATUSES, TASK_PRIORITIES, toOptions } from '../../co
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
 
+const userLabel = (u) => `${u.name}${u.nickname ? ` (${u.nickname})` : ''} · ${u.department || '-'}`
+
 const fields = [
   { name: 'title', label: 'ชื่องาน', required: true },
   { name: 'department', label: 'ฝ่าย', type: 'select', options: toOptions(DEPARTMENTS), visible: isTopTier, required: true },
-  { name: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', type: 'ref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: `${u.name} (${u.department || '-'})` }), required: true },
-  { name: 'coAssignees', label: 'ผู้รับผิดชอบร่วม', type: 'multiref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: u.name }) },
-  { name: 'reviewers', label: 'ผู้อนุมัติ (Reviewer)', type: 'multiref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: `${u.name} (${u.department || '-'})` }) },
+  { name: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', type: 'searchref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }), required: true },
+  { name: 'coAssignees', label: 'ผู้รับผิดชอบร่วม', type: 'multiref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+  { name: 'reviewers', label: 'ผู้อนุมัติ (Reviewer)', type: 'multiref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
   { name: 'startDate', label: 'วันที่เริ่ม (Start)', type: 'date' },
   { name: 'deadline', label: 'กำหนดส่ง', type: 'date', required: true },
   { name: 'status', label: 'สถานะ', type: 'select', options: toOptions(TASK_STATUSES) },

@@ -4,6 +4,7 @@ import StatusBadge from '../../components/StatusBadge'
 import { DEPARTMENTS, RISK_ISSUE_TYPES, IMPACT_LEVELS, LIKELIHOOD_LEVELS, RISK_ISSUE_STATUSES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
+const userLabel = (u) => `${u.name}${u.nickname ? ` (${u.nickname})` : ''} · ${u.department || '-'}`
 
 const fields = [
   { name: 'title', label: 'หัวข้อ', required: true },
@@ -13,7 +14,7 @@ const fields = [
   { name: 'impactLevel', label: 'ระดับผลกระทบ', type: 'select', options: toOptions(IMPACT_LEVELS) },
   { name: 'likelihoodLevel', label: 'ระดับโอกาสเกิด', type: 'select', options: toOptions(LIKELIHOOD_LEVELS) },
   { name: 'status', label: 'สถานะ', type: 'select', options: toOptions(RISK_ISSUE_STATUSES) },
-  { name: 'owner', label: 'ผู้รับผิดชอบ', type: 'ref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: u.name }) },
+  { name: 'owner', label: 'ผู้รับผิดชอบ', type: 'searchref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
   { name: 'mitigation', label: 'แนวทางแก้ไข/ป้องกัน', type: 'textarea' },
 ]
 

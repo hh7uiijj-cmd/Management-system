@@ -19,6 +19,7 @@ const Members = () => {
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState({ name: '', nickname: '', department: '', position: '', phone: '', email: '', workStatus: MEMBER_WORK_STATUSES[0], note: '' })
   const [saving, setSaving] = useState(false)
+  const [search, setSearch] = useState('')
 
   const isTopTier = ['admin', 'president', 'vice_president'].includes(user?.role?.name)
   const canManage = isTopTier || ['head', 'secretary'].includes(user?.role?.name)
@@ -39,6 +40,13 @@ const Members = () => {
     if (rankA !== rankB) return rankA - rankB
     return (a.name || '').localeCompare(b.name || '', 'th')
   })
+
+  const visibleMembers = search.trim()
+    ? sortedMembers.filter((m) => {
+        const q = search.trim().toLowerCase()
+        return (m.name || '').toLowerCase().includes(q) || (m.nickname || '').toLowerCase().includes(q)
+      })
+    : sortedMembers
 
   useEffect(() => { fetchMembers() }, [])
 
@@ -112,6 +120,18 @@ const Members = () => {
               <p className="text-gray-500 mt-1">ทั้งหมด {members.length} คน</p>
             </div>
             {canManage && <button onClick={openCreate} className="btn-primary">+ เพิ่มสมาชิก</button>}
+          </div>
+
+          <div className="card p-4 mb-6">
+            <label className="block text-xs font-medium text-gray-500 mb-1">ค้นหา (ชื่อ / ชื่อเล่น)</label>
+            <input
+              type="text"
+              className="input-field max-w-sm"
+              placeholder="พิมพ์ชื่อหรือชื่อเล่น..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <p className="text-xs text-gray-400 mt-2">แสดง {visibleMembers.length} คน จาก {members.length} คน</p>
           </div>
 
           {message.text && (
@@ -188,9 +208,11 @@ const Members = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {sortedMembers.length === 0 ? (
-                      <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500">ยังไม่มีข้อมูลสมาชิก</td></tr>
-                    ) : sortedMembers.map((m) => (
+                    {visibleMembers.length === 0 ? (
+                      <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                        {members.length === 0 ? 'ยังไม่มีข้อมูลสมาชิก' : 'ไม่พบรายชื่อที่ตรงกับคำค้นหา'}
+                      </td></tr>
+                    ) : visibleMembers.map((m) => (
                       <tr key={m._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 font-medium text-gray-800">{m.name}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{m.nickname || '-'}</td>

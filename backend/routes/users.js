@@ -13,8 +13,17 @@ router.get('/directory', auth, async (req, res) => {
     const filter = ['admin', 'president', 'vice_president'].includes(role)
       ? {}
       : { department: req.user.department };
-    const users = await User.find(filter).select('name email department').sort({ name: 1 });
-    res.json(users);
+    const users = await User.find(filter)
+      .select('name email department member')
+      .populate('member', 'nickname')
+      .sort({ name: 1 });
+    res.json(users.map((u) => ({
+      _id: u._id,
+      name: u.name,
+      email: u.email,
+      department: u.department,
+      nickname: u.member?.nickname || '',
+    })));
   } catch (error) {
     console.error('Get user directory error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
