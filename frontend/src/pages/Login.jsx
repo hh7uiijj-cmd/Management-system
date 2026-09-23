@@ -46,13 +46,13 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">อีเมล</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ใช้ / อีเมล</label>
             <input
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="input-field"
-              placeholder="กรอกอีเมลของคุณ"
+              placeholder="กรอกชื่อผู้ใช้หรืออีเมลของคุณ"
               required
             />
           </div>

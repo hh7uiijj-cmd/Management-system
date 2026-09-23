@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'ฝ่ายที่เลือกไม่ถูกต้อง' });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
       return res.status(400).json({ message: 'อีเมลนี้ถูกใช้งานแล้ว' });
     }
@@ -69,7 +69,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'กรุณากรอกอีเมลและรหัสผ่าน' });
     }
 
-    const user = await User.findOne({ email }).populate('role');
+    const user = await User.findOne({ email: email.toLowerCase().trim() }).populate('role');
     if (!user) {
       return res.status(401).json({ message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
     }
