@@ -1,0 +1,21 @@
+{
+  "functions": [
+    {
+      "source": "backend",
+      "codebase": "default",
+      "ignore": [
+        "node_modules",
+        ".env",
+        "*.log"
+      ]
+    }
+  ],
+  "hosting": {
+    "public": "frontend/dist",
+    "ignore": ["firebase.json", "**/.*"],
+    "rewrites": [
+      { "source": "/api/**", "function": "api" },
+      { "source": "**", "destination": "/index.html" }
+    ]
+  }
+}
