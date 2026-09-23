@@ -10,6 +10,14 @@ import Approval from './pages/Approval'
 import EventManagement from './pages/admin/EventManagement'
 import UserManagement from './pages/admin/UserManagement'
 import RoleManagement from './pages/admin/RoleManagement'
+import Tasks from './pages/modules/Tasks'
+import Documents from './pages/modules/Documents'
+import Letters from './pages/modules/Letters'
+import Budgets from './pages/modules/Budgets'
+import Risks from './pages/modules/Risks'
+import EvidencePage from './pages/modules/Evidence'
+import Members from './pages/modules/Members'
+import AuditLog from './pages/modules/AuditLog'
 
 function App() {
   return (
@@ -78,6 +86,70 @@ function App() {
             element={
               <ProtectedRoute requiredPermission="manage_roles">
                 <RoleManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/tasks"
+            element={
+              <ProtectedRoute>
+                <Tasks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/documents"
+            element={
+              <ProtectedRoute>
+                <Documents />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/letters"
+            element={
+              <ProtectedRoute>
+                <Letters />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/budgets"
+            element={
+              <ProtectedRoute>
+                <Budgets />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/risks"
+            element={
+              <ProtectedRoute>
+                <Risks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/evidence"
+            element={
+              <ProtectedRoute>
+                <EvidencePage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/members"
+            element={
+              <ProtectedRoute>
+                <Members />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/audit-log"
+            element={
+              <ProtectedRoute>
+                <AuditLog />
               </ProtectedRoute>
             }
           />

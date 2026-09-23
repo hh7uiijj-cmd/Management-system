@@ -18,7 +18,9 @@ const NavItem = ({ to, icon, label }) => (
 )
 
 const Sidebar = () => {
-  const { hasPermission } = useAuth()
+  const { hasPermission, user } = useAuth()
+  const roleName = user?.role?.name
+  const canSeeAuditLog = ['admin', 'president', 'vice_president', 'head', 'secretary'].includes(roleName)
 
   return (
     <aside className="w-64 bg-white border-r border-gray-200 min-h-screen p-4">
@@ -53,6 +55,94 @@ const Sidebar = () => {
             </svg>
           }
         />
+        <div className="pt-3 pb-1">
+          <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">งานแฟนพันธุ์แท้ ครั้งที่ 20</p>
+        </div>
+        <NavItem
+          to="/tasks"
+          label="งาน (Task Master)"
+          icon={
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+            </svg>
+          }
+        />
+        <NavItem
+          to="/documents"
+          label="เอกสาร"
+          icon={
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          }
+        />
+        <NavItem
+          to="/letters"
+          label="หนังสือราชการ"
+          icon={
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+          }
+        />
+        <NavItem
+          to="/budgets"
+          label="งบประมาณ"
+          icon={
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 8c-1.657 0-3 .672-3 1.5S10.343 11 12 11s3 .672 3 1.5-1.343 1.5-3 1.5m0-6V6m0 1v9m0 1v1m9-6a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+        />
+        <NavItem
+          to="/risks"
+          label="ความเสี่ยง/ปัญหา"
+          icon={
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          }
+        />
+        <NavItem
+          to="/evidence"
+          label="หลักฐาน"
+          icon={
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M5 13l4 4L19 7" />
+            </svg>
+          }
+        />
+        <NavItem
+          to="/members"
+          label="ทะเบียนสมาชิก"
+          icon={
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6 0a4 4 0 10-4-4" />
+            </svg>
+          }
+        />
+        {canSeeAuditLog && (
+          <NavItem
+            to="/audit-log"
+            label="ประวัติการแก้ไข"
+            icon={
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            }
+          />
+        )}
+        <div className="pt-3 pb-1">
+          <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">การลงทะเบียนกิจกรรม</p>
+        </div>
         {hasPermission('approve_registrations') && (
           <NavItem
             to="/approval"

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const { DEPARTMENTS } = require('../config/constants');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -22,6 +23,17 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
     required: true,
+  },
+  // ฝ่ายที่สังกัด (ไม่บังคับสำหรับ admin/president/vice_president ซึ่งมองเห็นทุกฝ่าย)
+  department: {
+    type: String,
+    enum: [...DEPARTMENTS, null],
+    default: null,
+  },
+  member: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Member',
+    default: null,
   },
   createdAt: {
     type: Date,
