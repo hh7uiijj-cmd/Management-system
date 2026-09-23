@@ -1,7 +1,7 @@
 // สิทธิ์การเข้าถึงโมดูลใหม่ (T/D/L/R/B/RI/E/M/U/A) — บังคับที่ server ทั้งหมด ห้าม client ตัดสินใจเอง
 //
 // ADMIN                        — ทุกฝ่าย ทุก action ทำได้ทุกอย่าง
-// PRESIDENT / VICE_PRESIDENT   — ดู/อนุมัติ/export ทุกฝ่าย (ไม่มีสิทธิ์ create/edit/delete)
+// PRESIDENT / VICE_PRESIDENT   — ทุกฝ่าย ทุก action ทำได้ทุกอย่าง (เหมือน admin แต่ไม่ใช่ admin role)
 // HEAD / SECRETARY             — ฝ่ายตัวเอง: create/edit/delete/approve/export ได้ทุกอย่าง, ฝ่ายอื่น: ดูได้อย่างเดียว
 // MEMBER                       — ดูได้เฉพาะรายการในฝ่ายตัวเอง, เพิ่ม/แก้ไข/ลบได้เฉพาะของตัวเองเท่านั้น
 
@@ -17,10 +17,7 @@ const moduleAccess = (action) => (req, res, next) => {
 
   if (role === 'admin') return next();
 
-  if (TOP_TIERS.includes(role)) {
-    if (['view', 'approve', 'export'].includes(action)) return next();
-    return res.status(403).json({ message: 'ตำแหน่งนี้มีสิทธิ์ดู/อนุมัติ/export เท่านั้น' });
-  }
+  if (TOP_TIERS.includes(role)) return next();
 
   if (DEPT_LEADS.includes(role)) return next(); // ต้องเช็คขอบเขตฝ่ายเพิ่มเติมด้วย canAccessDoc/departmentFilter
 
@@ -47,9 +44,7 @@ const canAccessDoc = (req, doc, { ownerField = 'createdBy', action = 'view' } = 
   const role = roleOf(req);
   if (role === 'admin') return true;
 
-  if (TOP_TIERS.includes(role)) {
-    return ['view', 'approve', 'export'].includes(action);
-  }
+  if (TOP_TIERS.includes(role)) return true;
 
   if (DEPT_LEADS.includes(role)) {
     return doc.department === req.user.department;

@@ -95,8 +95,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
   const handleChange = (name, value) => setForm((prev) => ({ ...prev, [name]: value }))
 
   const canEditItem = (item) => {
-    if (isTopTier && user.role.name === 'admin') return true
-    if (['president', 'vice_president'].includes(user.role.name)) return false
+    if (isTopTier) return true
     if (isDeptLead) return item.department === user.department
     if (isMember) {
       const ownerId = item[ownerField]?._id || item[ownerField]
@@ -105,7 +104,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
     return false
   }
 
-  const canCreate = user.role.name !== 'president' && user.role.name !== 'vice_president'
+  const canCreate = true
 
   const handleSubmit = async (e) => {
     e.preventDefault()
