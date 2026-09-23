@@ -36,26 +36,6 @@ const Sidebar = () => {
             </svg>
           }
         />
-        <NavItem
-          to="/events"
-          label="กิจกรรมทั้งหมด"
-          icon={
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-          }
-        />
-        <NavItem
-          to="/my-registrations"
-          label="การลงทะเบียนของฉัน"
-          icon={
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-            </svg>
-          }
-        />
         <div className="pt-3 pb-1">
           <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">งานแฟนพันธุ์แท้ ครั้งที่ 20</p>
         </div>
