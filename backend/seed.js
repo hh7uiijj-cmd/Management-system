@@ -64,7 +64,7 @@ async function seed() {
   });
 
   // รายชื่อสมาชิกจริงจากไฟล์ FT20 Control Center (backend/data/members.json)
-  // อีเมล/รหัสผ่านของแต่ละคน: u67110110553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>
+  // อีเมล/รหัสผ่านของแต่ละคน: 6711011553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>
   const memberRole = await Role.findOne({ name: 'member' });
   const roleByTier = {
     president: presidentRole,
@@ -93,7 +93,7 @@ async function seed() {
 
   console.log('Seed completed!');
   console.log('Admin login: DaoCha@gmail.com / ChaDao');
-  console.log(`สมาชิกทั้งหมด ${roster.length} คน — login ด้วย u67110110553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>`);
+  console.log(`สมาชิกทั้งหมด ${roster.length} คน — login ด้วย 6711011553<รหัส 3 หลัก>@gmail.com / <รหัส 3 หลัก>`);
   await mongoose.disconnect();
 }
 
