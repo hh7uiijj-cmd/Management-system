@@ -11,6 +11,7 @@ const POPULATE = [
   { path: 'coAssignees', select: 'name email department' },
   { path: 'reviewers', select: 'name email department' },
   { path: 'createdBy', select: 'name email' },
+  { path: 'submittedBy', select: 'name email' },
 ];
 
 // หัวหน้า/เลขาฝ่ายธุรการและงานประเมิน ดูงานได้ทุกฝ่ายเหมือนประธาน (เพื่องานติดตาม/ประเมินผลรวมทั้งโครงการ)
@@ -166,6 +167,41 @@ router.put('/:id', auth, moduleAccess('edit'), async (req, res) => {
     res.json(task);
   } catch (error) {
     console.error('Update task error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
+  }
+});
+
+// PUT /api/tasks/:id/submit — ผู้รับผิดชอบหลัก/ร่วม ส่งงานเป็นลิงก์และ/หรือข้อความ แล้วเปลี่ยนสถานะเป็น "รอตรวจสอบ" ให้ผู้อนุมัติ
+router.put('/:id/submit', auth, async (req, res) => {
+  try {
+    const { submissionLink, submissionText } = req.body;
+    if (!submissionLink?.trim() && !submissionText?.trim()) {
+      return res.status(400).json({ message: 'กรุณาใส่ลิงก์หรือข้อความอย่างน้อย 1 อย่าง' });
+    }
+
+    const task = await TaskMaster.findById(req.params.id);
+    if (!task) return res.status(404).json({ message: 'ไม่พบงานนี้' });
+
+    const role = req.user.role?.name;
+    const isTopTier = role === 'admin' || ['president', 'vice_president'].includes(role);
+    const isDeptLead = ['head', 'secretary'].includes(role) && task.department === req.user.department;
+    if (!isTopTier && !isDeptLead && !isAssignedToTask(req, task)) {
+      return res.status(403).json({ message: 'คุณไม่มีสิทธิ์ส่งงานนี้' });
+    }
+
+    task.submissionLink = submissionLink || '';
+    task.submissionText = submissionText || '';
+    task.submittedBy = req.user._id;
+    task.submittedAt = new Date();
+    task.status = 'รอตรวจสอบ';
+    await task.save();
+    await task.populate(POPULATE);
+
+    await logAudit({ req, module: 'TASK_MASTER', action: 'submit', entityId: task._id, department: task.department, summary: `ส่งงาน: ${task.title}` });
+
+    res.json(task);
+  } catch (error) {
+    console.error('Submit task error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
   }
 });

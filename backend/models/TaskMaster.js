@@ -54,6 +54,26 @@ const taskMasterSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
+  // ส่งงาน — ผู้รับผิดชอบส่งผลงานเป็นลิงก์และ/หรือข้อความ ให้ผู้อนุมัติตรวจ
+  submissionLink: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  submissionText: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  submittedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  },
+  submittedAt: {
+    type: Date,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

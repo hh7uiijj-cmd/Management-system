@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', canEditItemFn, canDeleteItemFn, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
+const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', canEditItemFn, canDeleteItemFn, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -26,6 +26,10 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
   const [editingId, setEditingId] = useState(null)
   const [form, setForm] = useState(emptyFromFields(fields))
   const [saving, setSaving] = useState(false)
+
+  const [submittingItem, setSubmittingItem] = useState(null)
+  const [submitForm, setSubmitForm] = useState({})
+  const [submitting, setSubmitting] = useState(false)
 
   const [search, setSearch] = useState('')
   const [filterValues, setFilterValues] = useState({})
@@ -144,6 +148,30 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
     }
   }
 
+  const openSubmit = (item) => {
+    const next = {}
+    ;(submitAction?.fields || []).forEach((f) => { next[f.name] = item[f.name] ?? '' })
+    setSubmittingItem(item)
+    setSubmitForm(next)
+    setMessage({ text: '', type: '' })
+  }
+
+  const handleSubmitAction = async (e) => {
+    e.preventDefault()
+    setSubmitting(true)
+    setMessage({ text: '', type: '' })
+    try {
+      await api.put(`${endpoint}/${submittingItem._id}/${submitAction.endpointSuffix}`, submitForm)
+      setMessage({ text: submitAction.successMessage || 'ส่งข้อมูลสำเร็จ', type: 'success' })
+      setSubmittingItem(null)
+      fetchItems()
+    } catch (err) {
+      setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const handleApprove = async (id, status) => {
     try {
       await api.put(`${endpoint}/${id}/${approveEndpointSuffix}`, { status })
@@ -154,14 +182,14 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
     }
   }
 
-  const renderFieldInput = (f) => {
+  const renderInput = (f, values, onChange) => {
     const options = f.optionsEndpoint ? (dynamicOptions[f.name] || []) : (f.options || [])
     if (f.type === 'select' || f.type === 'ref') {
       return (
         <select
           className="input-field"
-          value={form[f.name] || ''}
-          onChange={(e) => handleChange(f.name, e.target.value)}
+          value={values[f.name] || ''}
+          onChange={(e) => onChange(f.name, e.target.value)}
           required={f.required}
         >
           <option value="">-- เลือก{f.label} --</option>
@@ -175,8 +203,8 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
       return (
         <SearchMultiSelect
           options={options}
-          value={form[f.name] || []}
-          onChange={(next) => handleChange(f.name, next)}
+          value={values[f.name] || []}
+          onChange={(next) => onChange(f.name, next)}
         />
       )
     }
@@ -184,8 +212,8 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
       return (
         <SearchSelect
           options={options}
-          value={form[f.name] || ''}
-          onChange={(next) => handleChange(f.name, next)}
+          value={values[f.name] || ''}
+          onChange={(next) => onChange(f.name, next)}
           placeholder={`-- เลือก${f.label} --`}
         />
       )
@@ -195,8 +223,8 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
         <textarea
           className="input-field"
           rows={3}
-          value={form[f.name] || ''}
-          onChange={(e) => handleChange(f.name, e.target.value)}
+          value={values[f.name] || ''}
+          onChange={(e) => onChange(f.name, e.target.value)}
         />
       )
     }
@@ -204,12 +232,14 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
       <input
         type={f.type || 'text'}
         className="input-field"
-        value={form[f.name] || ''}
-        onChange={(e) => handleChange(f.name, e.target.value)}
+        value={values[f.name] || ''}
+        onChange={(e) => onChange(f.name, e.target.value)}
         required={f.required}
       />
     )
   }
+  const renderFieldInput = (f) => renderInput(f, form, handleChange)
+  const renderSubmitFieldInput = (f) => renderInput(f, submitForm, (name, value) => setSubmitForm((prev) => ({ ...prev, [name]: value })))
 
   const resetFilters = () => {
     setSearch('')
@@ -352,6 +382,28 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
             </div>
           )}
 
+          {submittingItem && (
+            <div className="card p-6 mb-6">
+              <h2 className="font-semibold text-gray-800 mb-4">{submitAction.formTitle || 'ส่งงาน'}: {submittingItem.title || ''}</h2>
+              <form onSubmit={handleSubmitAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {submitAction.fields.map((f) => (
+                  <div key={f.name} className={['textarea', 'multiref'].includes(f.type) ? 'md:col-span-2' : ''}>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
+                    {renderSubmitFieldInput(f)}
+                  </div>
+                ))}
+                <div className="md:col-span-2 flex gap-2 pt-2">
+                  <button type="submit" disabled={submitting} className="btn-primary">
+                    {submitting ? 'กำลังส่ง...' : 'ส่งงาน'}
+                  </button>
+                  <button type="button" onClick={() => setSubmittingItem(null)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                    ยกเลิก
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
           {loading ? (
             <div className="flex items-center justify-center h-48">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
@@ -397,6 +449,11 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
                           )}
                           {canDeleteItem(item) && (
                             <button onClick={() => handleDelete(item._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
+                          )}
+                          {submitAction && submitAction.visible(item, user) && (
+                            <button onClick={() => openSubmit(item)} className="text-xs px-3 py-1.5 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50">
+                              {submitAction.label || 'ส่งงาน'}
+                            </button>
                           )}
                           {canApprove && (canApproveItem ? canApproveItem(item, user) : (isTopTier || isDeptLead)) && (
                             approveMode === 'button' ? (

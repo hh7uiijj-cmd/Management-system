@@ -34,6 +34,30 @@ const columns = [
   { key: 'deadline', label: 'กำหนดส่ง', render: (item) => item.deadline ? new Date(item.deadline).toLocaleDateString('th-TH') : '-' },
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
   { key: 'priority', label: 'ความสำคัญ', render: (item) => <StatusBadge status={item.priority} /> },
+  {
+    key: 'submission',
+    label: 'งานที่ส่ง',
+    render: (item) =>
+      !item.submissionLink && !item.submissionText ? (
+        <span className="text-gray-400">-</span>
+      ) : (
+        <div className="space-y-0.5 max-w-xs">
+          {item.submissionLink && (
+            <a
+              href={item.submissionLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-indigo-600 hover:text-indigo-700 font-medium underline block truncate"
+            >
+              เปิดลิงก์งาน ↗
+            </a>
+          )}
+          {item.submissionText && (
+            <p className="text-xs text-gray-500 truncate" title={item.submissionText}>{item.submissionText}</p>
+          )}
+        </div>
+      ),
+  },
 ]
 
 const idOf = (v) => String(v?._id || v)
@@ -77,6 +101,17 @@ const Tasks = () => (
     approveTargetValue="เสร็จสิ้น"
     approveButtonLabel="อนุมัติงาน"
     canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user)}
+    submitAction={{
+      label: 'ส่งงาน',
+      formTitle: 'ส่งงาน',
+      endpointSuffix: 'submit',
+      successMessage: 'ส่งงานสำเร็จ รอผู้อนุมัติตรวจสอบ',
+      visible: (item, user) => isTopTier(user) || isDeptLead(user) || isAssignedToTask(item, user),
+      fields: [
+        { name: 'submissionLink', label: 'ลิงก์ผลงาน (ถ้ามี)', type: 'text' },
+        { name: 'submissionText', label: 'ข้อความ/รายละเอียดที่ส่ง', type: 'textarea' },
+      ],
+    }}
   />
 )
 
