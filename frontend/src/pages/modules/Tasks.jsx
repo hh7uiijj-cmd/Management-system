@@ -4,14 +4,19 @@ import StatusBadge from '../../components/StatusBadge'
 import { DEPARTMENTS, TASK_STATUSES, TASK_PRIORITIES, toOptions } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
+const isDeptLead = (user) => ['head', 'secretary'].includes(user?.role?.name)
 
 const userLabel = (u) => `${u.name}${u.nickname ? ` (${u.nickname})` : ''} · ${u.department || '-'}`
+
+// หัวหน้า/เลขา (และระดับบริหาร) เลือกผู้รับผิดชอบร่วมได้ทุกฝ่าย ส่วนสมาชิกทั่วไปเลือกได้เฉพาะฝ่ายตัวเอง
+const coAssigneesEndpoint = (user) =>
+  isTopTier(user) || isDeptLead(user) ? '/api/users/directory?all=true' : '/api/users/directory'
 
 const fields = [
   { name: 'title', label: 'ชื่องาน', required: true },
   { name: 'department', label: 'ฝ่าย', type: 'select', options: toOptions(DEPARTMENTS), visible: isTopTier, required: true },
   { name: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', type: 'searchref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }), required: true },
-  { name: 'coAssignees', label: 'ผู้รับผิดชอบร่วม', type: 'multiref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+  { name: 'coAssignees', label: 'ผู้รับผิดชอบร่วม', type: 'multiref', optionsEndpoint: coAssigneesEndpoint, mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
   { name: 'reviewers', label: 'ผู้อนุมัติ (Reviewer)', type: 'multiref', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
   { name: 'startDate', label: 'วันที่เริ่ม (Start)', type: 'date' },
   { name: 'deadline', label: 'กำหนดส่ง', type: 'date', required: true },

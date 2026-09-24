@@ -53,7 +53,8 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
   const resolveOptions = async (field) => {
     if (!field.optionsEndpoint) return field.options || []
     try {
-      const { data } = await api.get(field.optionsEndpoint)
+      const endpoint = typeof field.optionsEndpoint === 'function' ? field.optionsEndpoint(user) : field.optionsEndpoint
+      const { data } = await api.get(endpoint)
       return data.map(field.mapOption)
     } catch {
       return []
