@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
+const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', canEditItemFn, canDeleteItemFn, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -96,7 +96,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
 
   const handleChange = (name, value) => setForm((prev) => ({ ...prev, [name]: value }))
 
-  const canEditItem = (item) => {
+  const defaultCanEditItem = (item) => {
     if (isTopTier) return true
     if (isDeptLead) return item.department === user.department
     if (isMember) {
@@ -105,6 +105,8 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
     }
     return false
   }
+  const canEditItem = (item) => (canEditItemFn ? canEditItemFn(item, user) : defaultCanEditItem(item))
+  const canDeleteItem = (item) => (canDeleteItemFn ? canDeleteItemFn(item, user) : defaultCanEditItem(item))
 
   const canCreate = true
 
@@ -390,13 +392,11 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
                           </td>
                         ))}
                         <td className="px-6 py-4 space-x-2 whitespace-nowrap">
-                          {canEditItem(item) && (
-                            <>
-                              {allowEdit && (
-                                <button onClick={() => openEdit(item)} className="text-xs px-3 py-1.5 border border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50">แก้ไข</button>
-                              )}
-                              <button onClick={() => handleDelete(item._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
-                            </>
+                          {allowEdit && canEditItem(item) && (
+                            <button onClick={() => openEdit(item)} className="text-xs px-3 py-1.5 border border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50">แก้ไข</button>
+                          )}
+                          {canDeleteItem(item) && (
+                            <button onClick={() => handleDelete(item._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
                           )}
                           {canApprove && (canApproveItem ? canApproveItem(item, user) : (isTopTier || isDeptLead)) && (
                             approveMode === 'button' ? (

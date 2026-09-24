@@ -36,8 +36,31 @@ const columns = [
   { key: 'priority', label: 'ความสำคัญ', render: (item) => <StatusBadge status={item.priority} /> },
 ]
 
-const isReviewer = (item, user) =>
-  (item.reviewers || []).some((r) => String(r?._id || r) === String(user?._id))
+const idOf = (v) => String(v?._id || v)
+const isReviewer = (item, user) => (item.reviewers || []).some((r) => idOf(r) === String(user?._id))
+const isAssignedToTask = (item, user) => {
+  const uid = String(user?._id)
+  return (
+    idOf(item.mainAssignee) === uid ||
+    (item.coAssignees || []).some((c) => idOf(c) === uid) ||
+    isReviewer(item, user)
+  )
+}
+
+// ผู้รับผิดชอบหลัก/ร่วม/ผู้อนุมัติ ต้องแก้ไข (เช่น อัปเดตสถานะ) งานที่ตัวเองถูกมอบหมายได้เสมอ แม้คนละฝ่าย
+const canEditTaskItem = (item, user) => {
+  if (isTopTier(user)) return true
+  if (isDeptLead(user) && item.department === user.department) return true
+  if (idOf(item.createdBy) === String(user?._id)) return true
+  return isAssignedToTask(item, user)
+}
+
+// ลบงานยังจำกัดเฉพาะผู้สร้าง/หัวหน้า-เลขาฝ่ายเจ้าของงาน/ระดับบริหารเท่านั้น
+const canDeleteTaskItem = (item, user) => {
+  if (isTopTier(user)) return true
+  if (isDeptLead(user) && item.department === user.department) return true
+  return idOf(item.createdBy) === String(user?._id)
+}
 
 const Tasks = () => (
   <ModulePage
@@ -45,6 +68,8 @@ const Tasks = () => (
     endpoint="/api/tasks"
     fields={fields}
     columns={columns}
+    canEditItemFn={canEditTaskItem}
+    canDeleteItemFn={canDeleteTaskItem}
     canApprove
     approveField="status"
     approveMode="button"

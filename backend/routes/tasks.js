@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const TaskMaster = require('../models/TaskMaster');
 const auth = require('../middleware/auth');
-const { moduleAccess, canAccessDoc } = require('../middleware/moduleAccess');
+const { moduleAccess } = require('../middleware/moduleAccess');
 const { logAudit } = require('../utils/audit');
 const { TASK_STATUSES } = require('../config/constants');
 
@@ -22,7 +22,39 @@ const canViewAllTasks = (req) => {
   if (['head', 'secretary'].includes(role) && req.user.department === ADMIN_DEPARTMENT) return true;
   return false;
 };
-const taskViewFilter = (req) => (canViewAllTasks(req) ? {} : { department: req.user.department });
+// ผู้ที่ถูกมอบหมายเป็นผู้รับผิดชอบหลัก/ร่วม/ผู้อนุมัติ ต้องเห็นและจัดการงานนั้นได้เสมอ
+// แม้งานจะอยู่คนละฝ่ายกับตัวเอง (เพราะตอนนี้เลือกผู้ร่วมงาน/ผู้อนุมัติข้ามฝ่ายได้แล้ว)
+const idStr = (v) => String(v?._id || v);
+const isAssignedToTask = (req, task) => {
+  const uid = String(req.user._id);
+  return (
+    idStr(task.mainAssignee) === uid ||
+    task.coAssignees.some((id) => idStr(id) === uid) ||
+    task.reviewers.some((id) => idStr(id) === uid)
+  );
+};
+
+const taskViewFilter = (req) =>
+  canViewAllTasks(req)
+    ? {}
+    : { $or: [{ department: req.user.department }, { mainAssignee: req.user._id }, { coAssignees: req.user._id }, { reviewers: req.user._id }] };
+
+const canViewTask = (req, task) => canViewAllTasks(req) || task.department === req.user.department || isAssignedToTask(req, task);
+
+const canEditTask = (req, task) => {
+  const role = req.user.role?.name;
+  if (role === 'admin' || ['president', 'vice_president'].includes(role)) return true;
+  if (['head', 'secretary'].includes(role) && task.department === req.user.department) return true;
+  if (String(task.createdBy) === String(req.user._id)) return true;
+  return isAssignedToTask(req, task);
+};
+
+const canDeleteTask = (req, task) => {
+  const role = req.user.role?.name;
+  if (role === 'admin' || ['president', 'vice_president'].includes(role)) return true;
+  if (['head', 'secretary'].includes(role) && task.department === req.user.department) return true;
+  return String(task.createdBy) === String(req.user._id);
+};
 
 // GET /api/tasks
 router.get('/', auth, moduleAccess('view'), async (req, res) => {
@@ -56,7 +88,7 @@ router.get('/:id', auth, moduleAccess('view'), async (req, res) => {
   try {
     const task = await TaskMaster.findById(req.params.id).populate(POPULATE);
     if (!task) return res.status(404).json({ message: 'ไม่พบงานนี้' });
-    if (!canViewAllTasks(req) && !canAccessDoc(req, task, { action: 'view' })) {
+    if (!canViewTask(req, task)) {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์ดูงานนี้' });
     }
     res.json(task);
@@ -111,7 +143,7 @@ router.put('/:id', auth, moduleAccess('edit'), async (req, res) => {
   try {
     const task = await TaskMaster.findById(req.params.id);
     if (!task) return res.status(404).json({ message: 'ไม่พบงานนี้' });
-    if (!canAccessDoc(req, task, { action: 'edit' })) {
+    if (!canEditTask(req, task)) {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์แก้ไขงานนี้' });
     }
 
@@ -175,7 +207,7 @@ router.delete('/:id', auth, moduleAccess('delete'), async (req, res) => {
   try {
     const task = await TaskMaster.findById(req.params.id);
     if (!task) return res.status(404).json({ message: 'ไม่พบงานนี้' });
-    if (!canAccessDoc(req, task, { action: 'delete' })) {
+    if (!canDeleteTask(req, task)) {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์ลบงานนี้' });
     }
 
