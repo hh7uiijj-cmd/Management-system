@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import Navbar from '../../components/Navbar'
 import Sidebar from '../../components/Sidebar'
+import DepartmentBadge from '../../components/DepartmentBadge'
+import { RoleBadge } from '../../components/PositionBadge'
 import api from '../../api/axios'
 
 // AUDIT_LOG (A) — อ่านอย่างเดียว
@@ -43,12 +45,13 @@ const AuditLog = () => {
                       <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">การกระทำ</th>
                       <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ฝ่าย</th>
                       <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">โดย</th>
+                      <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">ยศ / ฝ่าย</th>
                       <th className="text-left px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">รายละเอียด</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {logs.length === 0 ? (
-                      <tr><td colSpan={6} className="px-6 py-12 text-center text-gray-500">ยังไม่มีประวัติ</td></tr>
+                      <tr><td colSpan={7} className="px-6 py-12 text-center text-gray-500">ยังไม่มีประวัติ</td></tr>
                     ) : logs.map((log) => (
                       <tr key={log._id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{formatDate(log.createdAt)}</td>
@@ -56,6 +59,10 @@ const AuditLog = () => {
                         <td className="px-6 py-4 text-sm text-gray-700">{log.action}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{log.department || '-'}</td>
                         <td className="px-6 py-4 text-sm text-gray-600">{log.performedBy?.name || '-'}</td>
+                        <td className="px-6 py-4 text-sm space-x-1 whitespace-nowrap">
+                          <RoleBadge roleName={log.performedBy?.role?.name} label={log.performedBy?.role?.displayName} />
+                          {log.performedBy?.department && <DepartmentBadge department={log.performedBy.department} />}
+                        </td>
                         <td className="px-6 py-4 text-sm text-gray-600">{log.summary}</td>
                       </tr>
                     ))}

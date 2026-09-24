@@ -13,7 +13,11 @@ router.get('/', auth, async (req, res) => {
     }
 
     const logs = await AuditLog.find(departmentFilter(req))
-      .populate('performedBy', 'name email')
+      .populate({
+        path: 'performedBy',
+        select: 'name email department',
+        populate: { path: 'role', select: 'name displayName' },
+      })
       .sort({ createdAt: -1 })
       .limit(500);
     res.json(logs);
