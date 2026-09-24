@@ -90,8 +90,8 @@ const Login = () => {
 
         <div className="mt-6 pt-5 border-t border-gray-100 text-xs text-gray-500 space-y-1">
           <p className="font-medium text-gray-600">วิธีเข้าสู่ระบบ</p>
-          <p>สมาชิกโครงการ: ใช้ <code className="bg-gray-100 px-1 rounded">6711011553&lt;รหัส 3 หลัก&gt;@mail.dusit.ac.th</code> เป็นอีเมล และรหัส 3 หลักเดียวกันเป็นรหัสผ่าน</p>
-          <p>เช่น รหัส 052 → อีเมล <code className="bg-gray-100 px-1 rounded">6711011553052@mail.dusit.ac.th</code> รหัสผ่าน <code className="bg-gray-100 px-1 rounded">052</code></p>
+          <p>สมาชิกโครงการ: ใช้ <code className="bg-gray-100 px-1 rounded">u6711011553&lt;รหัส 3 หลัก&gt;@mail.dusit.ac.th</code> เป็นอีเมล และรหัส 3 หลักเดียวกันเป็นรหัสผ่าน</p>
+          <p>เช่น รหัส 052 → อีเมล <code className="bg-gray-100 px-1 rounded">u6711011553052@mail.dusit.ac.th</code> รหัสผ่าน <code className="bg-gray-100 px-1 rounded">052</code></p>
         </div>
       </div>
     </div>
