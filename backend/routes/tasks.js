@@ -4,6 +4,7 @@ const TaskMaster = require('../models/TaskMaster');
 const auth = require('../middleware/auth');
 const { moduleAccess, canAccessDoc } = require('../middleware/moduleAccess');
 const { logAudit } = require('../utils/audit');
+const { TASK_STATUSES } = require('../config/constants');
 
 const POPULATE = [
   { path: 'mainAssignee', select: 'name email department' },
@@ -32,6 +33,20 @@ router.get('/', auth, moduleAccess('view'), async (req, res) => {
     res.json(tasks);
   } catch (error) {
     console.error('Get tasks error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
+  }
+});
+
+// GET /api/tasks/recent-completed — งานที่เสร็จล่าสุด ให้ทุกฝ่ายเห็นได้ (ไม่กรองตามฝ่าย) สำหรับ Dashboard
+router.get('/recent-completed', auth, async (req, res) => {
+  try {
+    const tasks = await TaskMaster.find({ status: 'เสร็จสิ้น' })
+      .populate(POPULATE)
+      .sort({ updatedAt: -1 })
+      .limit(8);
+    res.json(tasks);
+  } catch (error) {
+    console.error('Get recent completed tasks error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
   }
 });
@@ -119,6 +134,38 @@ router.put('/:id', auth, moduleAccess('edit'), async (req, res) => {
     res.json(task);
   } catch (error) {
     console.error('Update task error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
+  }
+});
+
+// PUT /api/tasks/:id/approve — ผู้อนุมัติ (reviewers) หรือ admin/ประธาน/รองประธาน/หัวหน้า-เลขาฝ่ายเจ้าของงาน กดอนุมัติเพื่ออัปเดตสถานะ
+router.put('/:id/approve', auth, async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!status || !TASK_STATUSES.includes(status)) {
+      return res.status(400).json({ message: 'สถานะไม่ถูกต้อง' });
+    }
+
+    const task = await TaskMaster.findById(req.params.id);
+    if (!task) return res.status(404).json({ message: 'ไม่พบงานนี้' });
+
+    const role = req.user.role?.name;
+    const isTopTier = role === 'admin' || ['president', 'vice_president'].includes(role);
+    const isDeptLead = ['head', 'secretary'].includes(role) && task.department === req.user.department;
+    const isReviewer = task.reviewers.some((r) => String(r) === String(req.user._id));
+    if (!isTopTier && !isDeptLead && !isReviewer) {
+      return res.status(403).json({ message: 'คุณไม่มีสิทธิ์อนุมัติงานนี้' });
+    }
+
+    task.status = status;
+    await task.save();
+    await task.populate(POPULATE);
+
+    await logAudit({ req, module: 'TASK_MASTER', action: 'approve', entityId: task._id, department: task.department, summary: `อนุมัติงาน "${task.title}" เป็นสถานะ ${status}` });
+
+    res.json(task);
+  } catch (error) {
+    console.error('Approve task error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
   }
 });

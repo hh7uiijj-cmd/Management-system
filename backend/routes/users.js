@@ -7,10 +7,11 @@ const checkPermission = require('../middleware/checkPermission');
 
 // GET /api/users/directory - รายชื่อผู้ใช้แบบย่อ สำหรับเลือกผู้รับผิดชอบงาน (ทุกคนที่ login แล้วเรียกได้)
 // จำกัดเฉพาะฝ่ายตัวเอง ยกเว้น admin/president/vice_president ที่เห็นทุกฝ่าย
+// ?all=true — ข้ามการกรองฝ่าย (ใช้กับช่องที่ต้องเลือกได้ทุกคนทุกฝ่าย เช่น ผู้อนุมัติ/Reviewer)
 router.get('/directory', auth, async (req, res) => {
   try {
     const role = req.user.role?.name;
-    const filter = ['admin', 'president', 'vice_president'].includes(role)
+    const filter = req.query.all === 'true' || ['admin', 'president', 'vice_president'].includes(role)
       ? {}
       : { department: req.user.department };
     const users = await User.find(filter)

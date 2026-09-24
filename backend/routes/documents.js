@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const DocumentFile = require('../models/DocumentFile');
 const auth = require('../middleware/auth');
-const { moduleAccess, departmentFilter, canAccessDoc } = require('../middleware/moduleAccess');
+const { moduleAccess, canAccessDoc } = require('../middleware/moduleAccess');
 const { logAudit } = require('../utils/audit');
 const { DOCUMENT_APPROVAL_STATUSES } = require('../config/constants');
 
@@ -12,10 +12,11 @@ const POPULATE = [
   { path: 'approvalHistory.by', select: 'name' },
 ];
 
-// GET /api/documents
+// GET /api/documents — ทุกฝ่ายดูรายการเอกสารและกดลิงก์เปิดไฟล์ได้ (ไม่กรองตามฝ่าย)
+// สิทธิ์ create/edit/delete/approve ยังจำกัดตามฝ่ายตามปกติ
 router.get('/', auth, moduleAccess('view'), async (req, res) => {
   try {
-    const documents = await DocumentFile.find(departmentFilter(req))
+    const documents = await DocumentFile.find({})
       .populate(POPULATE)
       .sort({ createdAt: -1 });
     res.json(documents);
@@ -30,9 +31,6 @@ router.get('/:id', auth, moduleAccess('view'), async (req, res) => {
   try {
     const doc = await DocumentFile.findById(req.params.id).populate(POPULATE);
     if (!doc) return res.status(404).json({ message: 'ไม่พบเอกสารนี้' });
-    if (!canAccessDoc(req, doc, { ownerField: 'uploadedBy', action: 'view' })) {
-      return res.status(403).json({ message: 'คุณไม่มีสิทธิ์ดูเอกสารนี้' });
-    }
     res.json(doc);
   } catch (error) {
     console.error('Get document error:', error);

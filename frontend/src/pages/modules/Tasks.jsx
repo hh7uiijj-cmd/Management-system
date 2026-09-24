@@ -12,7 +12,7 @@ const fields = [
   { name: 'department', label: 'ฝ่าย', type: 'select', options: toOptions(DEPARTMENTS), visible: isTopTier, required: true },
   { name: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', type: 'searchref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }), required: true },
   { name: 'coAssignees', label: 'ผู้รับผิดชอบร่วม', type: 'multiref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
-  { name: 'reviewers', label: 'ผู้อนุมัติ (Reviewer)', type: 'multiref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+  { name: 'reviewers', label: 'ผู้อนุมัติ (Reviewer)', type: 'multiref', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
   { name: 'startDate', label: 'วันที่เริ่ม (Start)', type: 'date' },
   { name: 'deadline', label: 'กำหนดส่ง', type: 'date', required: true },
   { name: 'status', label: 'สถานะ', type: 'select', options: toOptions(TASK_STATUSES) },
@@ -31,12 +31,22 @@ const columns = [
   { key: 'priority', label: 'ความสำคัญ', render: (item) => <StatusBadge status={item.priority} /> },
 ]
 
+const isReviewer = (item, user) =>
+  (item.reviewers || []).some((r) => String(r?._id || r) === String(user?._id))
+
 const Tasks = () => (
   <ModulePage
     title="งาน (Task Master)"
     endpoint="/api/tasks"
     fields={fields}
     columns={columns}
+    canApprove
+    approveField="status"
+    approveMode="button"
+    approveTriggerValue="รอตรวจสอบ"
+    approveTargetValue="เสร็จสิ้น"
+    approveButtonLabel="อนุมัติงาน"
+    canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user)}
   />
 )
 

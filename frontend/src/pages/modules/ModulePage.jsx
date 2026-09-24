@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
+const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -397,16 +397,27 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
                               <button onClick={() => handleDelete(item._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
                             </>
                           )}
-                          {canApprove && (isTopTier || isDeptLead) && (
-                            <select
-                              className="text-xs border border-gray-300 rounded-lg px-2 py-1"
-                              value={item[approveField] || ''}
-                              onChange={(e) => handleApprove(item._id, e.target.value)}
-                            >
-                              {approveOptions.map((opt) => (
-                                <option key={opt} value={opt}>{opt}</option>
-                              ))}
-                            </select>
+                          {canApprove && (canApproveItem ? canApproveItem(item, user) : (isTopTier || isDeptLead)) && (
+                            approveMode === 'button' ? (
+                              item[approveField] === approveTriggerValue && (
+                                <button
+                                  onClick={() => handleApprove(item._id, approveTargetValue)}
+                                  className="text-xs px-3 py-1.5 border border-green-500 text-green-600 rounded-lg hover:bg-green-50"
+                                >
+                                  {approveButtonLabel}
+                                </button>
+                              )
+                            ) : (
+                              <select
+                                className="text-xs border border-gray-300 rounded-lg px-2 py-1"
+                                value={item[approveField] || ''}
+                                onChange={(e) => handleApprove(item._id, e.target.value)}
+                              >
+                                {approveOptions.map((opt) => (
+                                  <option key={opt} value={opt}>{opt}</option>
+                                ))}
+                              </select>
+                            )
                           )}
                         </td>
                       </tr>

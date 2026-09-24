@@ -93,6 +93,7 @@ const Dashboard = () => {
   const [risks, setRisks] = useState([])
   const [evidence, setEvidence] = useState([])
   const [registrationStats, setRegistrationStats] = useState(null)
+  const [recentCompletedTasks, setRecentCompletedTasks] = useState([])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -107,6 +108,7 @@ const Dashboard = () => {
           risksRes,
           evidenceRes,
           regStatsRes,
+          recentCompletedRes,
         ] = await Promise.all([
           api.get('/api/events').catch(() => empty),
           api.get('/api/tasks').catch(() => empty),
@@ -116,6 +118,7 @@ const Dashboard = () => {
           api.get('/api/risks').catch(() => empty),
           api.get('/api/evidence').catch(() => empty),
           api.get('/api/registrations/stats').catch(() => ({ data: null })),
+          api.get('/api/tasks/recent-completed').catch(() => empty),
         ])
 
         setRecentEvents(eventsRes.data.slice(0, 5))
@@ -126,6 +129,7 @@ const Dashboard = () => {
         setRisks(risksRes.data)
         setEvidence(evidenceRes.data)
         setRegistrationStats(regStatsRes.data)
+        setRecentCompletedTasks(recentCompletedRes.data)
       } catch (err) {
         console.error('Dashboard fetch error:', err)
       } finally {
@@ -280,6 +284,34 @@ const Dashboard = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* งานที่เสร็จล่าสุด — ทุกฝ่ายเห็นได้ ไม่จำกัดเฉพาะฝ่ายตัวเอง */}
+              <div className="card p-6 mb-8">
+                <h2 className="text-lg font-semibold text-gray-800 mb-1">งานที่เสร็จล่าสุด</h2>
+                <p className="text-sm text-gray-500 mb-4">งานที่เพิ่งเสร็จสิ้นล่าสุดจากทุกฝ่าย</p>
+                {recentCompletedTasks.length === 0 ? (
+                  <EmptyRow>ยังไม่มีงานที่เสร็จสิ้น</EmptyRow>
+                ) : (
+                  <div className="space-y-2">
+                    {recentCompletedTasks.map((task) => (
+                      <Link
+                        key={task._id}
+                        to="/tasks"
+                        className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-800">{task.title}</p>
+                          <div className="mt-1 flex items-center gap-2">
+                            <DepartmentBadge department={task.department} />
+                            <span className="text-xs text-gray-400">โดย {task.mainAssignee?.name || '-'}</span>
+                          </div>
+                        </div>
+                        <span className="text-sm font-medium text-green-600">{formatDate(task.updatedAt)}</span>
+                      </Link>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* DOCUMENTS + RISK CONTROL */}

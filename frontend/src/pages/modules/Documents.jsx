@@ -19,6 +19,23 @@ const columns = [
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'approvalStatus', label: 'สถานะอนุมัติ', render: (item) => <StatusBadge status={item.approvalStatus} /> },
   { key: 'uploadedBy', label: 'ผู้อัปโหลด', render: (item) => item.uploadedBy?.name || '-' },
+  {
+    key: 'fileUrl',
+    label: 'ไฟล์เอกสาร',
+    render: (item) =>
+      item.fileUrl ? (
+        <a
+          href={item.fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-indigo-600 hover:text-indigo-700 font-medium underline"
+        >
+          เปิดดูเอกสาร ↗
+        </a>
+      ) : (
+        <span className="text-gray-400">-</span>
+      ),
+  },
 ]
 
 const Documents = () => (
