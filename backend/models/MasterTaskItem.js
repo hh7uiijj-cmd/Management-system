@@ -18,11 +18,14 @@ const masterTaskItemSchema = new mongoose.Schema({
     required: true,
     trim: true,
   },
-  responsible: {
+  responsible: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null,
-  },
+  }],
+  supporters: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -12,14 +12,18 @@ const fields = [
   { name: 'department', label: 'ฝ่าย', type: 'select', options: toOptions(DEPARTMENTS), visible: isTopTier, required: true },
   { name: 'no', label: 'No.', type: 'number' },
   { name: 'task', label: 'งาน/รายงาน', required: true },
-  { name: 'responsible', label: 'ผู้รับผิดชอบ', type: 'searchref', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+  { name: 'responsible', label: 'ผู้รับผิดชอบ', type: 'multiref', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+  { name: 'supporters', label: 'ผู้สนับสนุน', type: 'multiref', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
 ]
+
+const namesOf = (list) => (list?.length ? list.map((u) => u.name).join(', ') : '-')
 
 const columns = [
   { key: 'no', label: 'No.', render: (item) => item.no ?? '-' },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'task', label: 'งาน/รายงาน' },
-  { key: 'responsible', label: 'ผู้รับผิดชอบ', render: (item) => item.responsible?.name || '-' },
+  { key: 'responsible', label: 'ผู้รับผิดชอบ', render: (item) => namesOf(item.responsible) },
+  { key: 'supporters', label: 'ผู้สนับสนุน', render: (item) => namesOf(item.supporters) },
 ]
 
 // หัวหน้า/เลขา/สมาชิก เห็นเฉพาะฝ่ายตัวเองอยู่แล้ว (server กรองมาให้) — ประธาน/รองประธาน/แอดมิน เห็นทุกฝ่าย

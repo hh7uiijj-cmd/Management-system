@@ -6,6 +6,7 @@ const { logAudit } = require('../utils/audit');
 
 const POPULATE = [
   { path: 'responsible', select: 'name email department' },
+  { path: 'supporters', select: 'name email department' },
   { path: 'createdBy', select: 'name email' },
 ];
 
@@ -33,7 +34,7 @@ router.post('/', auth, async (req, res) => {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์เพิ่มรายการนี้' });
     }
 
-    const { no, task, responsible } = req.body;
+    const { no, task, responsible, supporters } = req.body;
     if (!task) return res.status(400).json({ message: 'กรุณากรอกชื่องาน/รายงาน' });
 
     const department = isTopTier(req) ? req.body.department : req.user.department;
@@ -43,7 +44,8 @@ router.post('/', auth, async (req, res) => {
       department,
       no: no === '' || no === undefined ? null : no,
       task,
-      responsible: responsible || null,
+      responsible: responsible || [],
+      supporters: supporters || [],
       createdBy: req.user._id,
     });
     await item.save();
@@ -68,10 +70,11 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์แก้ไขรายการนี้' });
     }
 
-    const { no, task, responsible } = req.body;
+    const { no, task, responsible, supporters } = req.body;
     if (no !== undefined) item.no = no === '' ? null : no;
     if (task) item.task = task;
-    if (responsible !== undefined) item.responsible = responsible || null;
+    if (responsible !== undefined) item.responsible = responsible || [];
+    if (supporters !== undefined) item.supporters = supporters || [];
 
     await item.save();
     await item.populate(POPULATE);
