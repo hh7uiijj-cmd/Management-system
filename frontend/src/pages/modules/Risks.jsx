@@ -26,6 +26,7 @@ const columns = [
   { key: 'likelihoodLevel', label: 'โอกาสเกิด', render: (item) => <StatusBadge status={item.likelihoodLevel} /> },
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
   { key: 'owner', label: 'ผู้รับผิดชอบ', render: (item) => (item.owner?.length ? item.owner.map((o) => o.name).join(', ') : '-') },
+  { key: 'createdBy', label: 'ผู้สร้างรายการ', render: (item) => item.createdBy?.name || '-' },
 ]
 
 const Risks = () => (
