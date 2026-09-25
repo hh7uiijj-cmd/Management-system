@@ -10,7 +10,7 @@ const fields = [
   { name: 'category', label: 'หมวดหมู่', type: 'select', options: toOptions(DOCUMENT_CATEGORIES), required: true },
   { name: 'department', label: 'ฝ่าย', type: 'select', options: toOptions(DEPARTMENTS), visible: isTopTier, required: true },
   { name: 'relatedTask', label: 'งานที่เกี่ยวข้อง', type: 'ref', optionsEndpoint: '/api/tasks', mapOption: (t) => ({ value: t._id, label: t.title }) },
-  { name: 'fileUrl', label: 'ลิงก์ไฟล์เอกสาร' },
+  { name: 'fileUrl', label: 'ลิงก์ไฟล์เอกสาร', type: 'url' },
 ]
 
 const columns = [

@@ -89,6 +89,7 @@ const canDeleteTaskItem = (item, user) => {
 const Tasks = () => (
   <ModulePage
     title="งาน (Task Master)"
+    subtitle="ติดตามงานแต่ละชิ้นแบบละเอียด มีกำหนดส่ง สถานะ การส่งงาน และอนุมัติงานได้"
     endpoint="/api/tasks"
     fields={fields}
     columns={columns}
@@ -100,6 +101,8 @@ const Tasks = () => (
     approveTriggerValue="รอตรวจสอบ"
     approveTargetValue="เสร็จสิ้น"
     approveButtonLabel="อนุมัติงาน"
+    rejectTargetValue="กำลังดำเนินการ"
+    rejectButtonLabel="ตีกลับแก้ไข"
     canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user)}
     submitAction={{
       label: 'ส่งงาน',
@@ -108,7 +111,7 @@ const Tasks = () => (
       successMessage: 'ส่งงานสำเร็จ รอผู้อนุมัติตรวจสอบ',
       visible: (item, user) => isTopTier(user) || isDeptLead(user) || isAssignedToTask(item, user),
       fields: [
-        { name: 'submissionLink', label: 'ลิงก์ผลงาน (ถ้ามี)', type: 'text' },
+        { name: 'submissionLink', label: 'ลิงก์ผลงาน (ถ้ามี)', type: 'url' },
         { name: 'submissionText', label: 'ข้อความ/รายละเอียดที่ส่ง', type: 'textarea' },
       ],
     }}

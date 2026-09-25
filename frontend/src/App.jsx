@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './context/AuthContext'
+import { SidebarProvider } from './context/SidebarContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
@@ -23,6 +24,7 @@ import AuditLog from './pages/modules/AuditLog'
 function App() {
   return (
     <AuthProvider>
+      <SidebarProvider>
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
@@ -165,6 +167,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </SidebarProvider>
     </AuthProvider>
   )
 }

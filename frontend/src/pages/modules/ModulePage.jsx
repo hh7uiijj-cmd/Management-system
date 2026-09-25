@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
+const ModulePage = ({ title, subtitle, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -278,6 +278,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+              {subtitle && <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>}
               <p className="text-gray-500 mt-1">ทั้งหมด {items.length} รายการ</p>
             </div>
             <div className="flex gap-2">
@@ -458,12 +459,22 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
                           {canApprove && (canApproveItem ? canApproveItem(item, user) : (isTopTier || isDeptLead)) && (
                             approveMode === 'button' ? (
                               item[approveField] === approveTriggerValue && (
-                                <button
-                                  onClick={() => handleApprove(item._id, approveTargetValue)}
-                                  className="text-xs px-3 py-1.5 border border-green-500 text-green-600 rounded-lg hover:bg-green-50"
-                                >
-                                  {approveButtonLabel}
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => handleApprove(item._id, approveTargetValue)}
+                                    className="text-xs px-3 py-1.5 border border-green-500 text-green-600 rounded-lg hover:bg-green-50"
+                                  >
+                                    {approveButtonLabel}
+                                  </button>
+                                  {rejectTargetValue && (
+                                    <button
+                                      onClick={() => handleApprove(item._id, rejectTargetValue)}
+                                      className="text-xs px-3 py-1.5 border border-amber-500 text-amber-600 rounded-lg hover:bg-amber-50"
+                                    >
+                                      {rejectButtonLabel}
+                                    </button>
+                                  )}
+                                </>
                               )
                             ) : (
                               <select

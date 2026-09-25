@@ -1,26 +1,38 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import loginBg from '../assets/login-bg.png'
+
+// เซิร์ฟเวอร์ฟรีไทเยอร์จะ "หลับ" เมื่อไม่มีคนใช้งานนาน ครั้งแรกที่ปลุกจะช้ากว่าปกติมาก
+// ถ้ารอเกินเวลานี้ยังไม่เสร็จ ให้ขึ้นข้อความอธิบายเพื่อไม่ให้ผู้ใช้เข้าใจผิดว่าเว็บพัง
+const SLOW_SERVER_HINT_MS = 4000
 
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [showSlowHint, setShowSlowHint] = useState(false)
+  const slowTimerRef = useRef(null)
   const { login } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => () => clearTimeout(slowTimerRef.current), [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setShowSlowHint(false)
     setLoading(true)
+    slowTimerRef.current = setTimeout(() => setShowSlowHint(true), SLOW_SERVER_HINT_MS)
     try {
       await login(email, password)
       navigate('/')
     } catch (err) {
       setError(err.response?.data?.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ')
     } finally {
+      clearTimeout(slowTimerRef.current)
+      setShowSlowHint(false)
       setLoading(false)
     }
   }
@@ -86,6 +98,11 @@ const Login = () => {
               </span>
             ) : 'เข้าสู่ระบบ'}
           </button>
+          {showSlowHint && (
+            <p className="text-xs text-amber-600 text-center -mt-2">
+              เซิร์ฟเวอร์อาจกำลังเริ่มทำงานใหม่ (ไม่ได้ใช้งานมาสักพัก) กรุณารอสักครู่...
+            </p>
+          )}
         </form>
 
         <div className="mt-6 pt-5 border-t border-gray-100 text-xs text-gray-500 space-y-1">

@@ -31,6 +31,7 @@ const columns = [
 const MasterTaskList = () => (
   <ModulePage
     title="Master Task List"
+    subtitle="ลิสต์งาน/รายงานภาพรวมของฝ่าย แบบสรุปสั้นๆ ไม่มีกำหนดส่ง/สถานะละเอียดแบบ Task Master"
     endpoint="/api/master-task-list"
     fields={fields}
     columns={columns}

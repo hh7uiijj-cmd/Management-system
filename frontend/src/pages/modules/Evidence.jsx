@@ -8,7 +8,7 @@ const fields = [
   { name: 'relatedTask', label: 'งานที่เกี่ยวข้อง', type: 'ref', optionsEndpoint: '/api/tasks', mapOption: (t) => ({ value: t._id, label: t.title }), required: true },
   { name: 'department', label: 'ฝ่าย', type: 'select', options: toOptions(DEPARTMENTS), visible: isTopTier, required: true },
   { name: 'description', label: 'รายละเอียดหลักฐาน', type: 'textarea' },
-  { name: 'fileUrl', label: 'ลิงก์ไฟล์หลักฐาน' },
+  { name: 'fileUrl', label: 'ลิงก์ไฟล์หลักฐาน', type: 'url' },
 ]
 
 const columns = [

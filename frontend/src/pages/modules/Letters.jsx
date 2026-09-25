@@ -14,7 +14,7 @@ const fields = [
   { name: 'dueDate', label: 'กำหนดตอบกลับ', type: 'date' },
   { name: 'relatedTask', label: 'งานที่เกี่ยวข้อง', type: 'ref', optionsEndpoint: '/api/tasks', mapOption: (t) => ({ value: t._id, label: t.title }) },
   { name: 'status', label: 'สถานะ', type: 'select', options: toOptions(LETTER_STATUSES) },
-  { name: 'fileUrl', label: 'ลิงก์ไฟล์หนังสือ' },
+  { name: 'fileUrl', label: 'ลิงก์ไฟล์หนังสือ', type: 'url' },
 ]
 
 const columns = [

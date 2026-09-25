@@ -40,9 +40,15 @@ router.post('/', auth, async (req, res) => {
     const department = isTopTier(req) ? req.body.department : req.user.department;
     if (!department) return res.status(400).json({ message: 'กรุณาระบุฝ่าย' });
 
+    let itemNo = no === '' || no === undefined ? null : no;
+    if (itemNo === null) {
+      const last = await MasterTaskItem.findOne({ department }).sort({ no: -1 });
+      itemNo = (last?.no || 0) + 1;
+    }
+
     const item = new MasterTaskItem({
       department,
-      no: no === '' || no === undefined ? null : no,
+      no: itemNo,
       task,
       responsible: responsible || [],
       supporters: supporters || [],

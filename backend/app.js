@@ -20,6 +20,7 @@ app.use('/api/risks', require('./routes/risks'));
 app.use('/api/evidence', require('./routes/evidence'));
 app.use('/api/members', require('./routes/members'));
 app.use('/api/audit-logs', require('./routes/audit'));
+app.use('/api/search', require('./routes/search'));
 
 app.get('/api/constants', (req, res) => res.json(require('./config/constants')));
 

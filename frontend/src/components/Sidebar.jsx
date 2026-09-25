@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useSidebar } from '../context/SidebarContext'
 
 const NavItem = ({ to, icon, label }) => (
   <NavLink
@@ -20,12 +21,24 @@ const NavItem = ({ to, icon, label }) => (
 
 const Sidebar = () => {
   const { hasPermission, user } = useAuth()
+  const { isOpen, close } = useSidebar()
   const roleName = user?.role?.name
   const canSeeAuditLog = ['admin', 'president', 'vice_president', 'head', 'secretary'].includes(roleName)
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-100 min-h-screen p-4">
-      <nav className="space-y-1">
+    <>
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 z-30 md:hidden"
+          onClick={close}
+        />
+      )}
+      <aside
+        className={`w-64 bg-white border-r border-gray-100 min-h-screen p-4 fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 md:static md:translate-x-0 md:z-auto ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+      <nav className="space-y-1" onClick={close}>
         <NavItem
           to="/"
           label="แดชบอร์ด"
@@ -188,7 +201,8 @@ const Sidebar = () => {
           />
         )}
       </nav>
-    </aside>
+      </aside>
+    </>
   )
 }
 
