@@ -12,6 +12,7 @@ app.use('/api/registrations', require('./routes/registrations'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/roles', require('./routes/roles'));
 app.use('/api/tasks', require('./routes/tasks'));
+app.use('/api/master-task-list', require('./routes/masterTaskList'));
 app.use('/api/documents', require('./routes/documents'));
 app.use('/api/letters', require('./routes/letters'));
 app.use('/api/budgets', require('./routes/budgets'));

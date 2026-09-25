@@ -11,6 +11,7 @@ import EventManagement from './pages/admin/EventManagement'
 import UserManagement from './pages/admin/UserManagement'
 import RoleManagement from './pages/admin/RoleManagement'
 import Tasks from './pages/modules/Tasks'
+import MasterTaskList from './pages/modules/MasterTaskList'
 import Documents from './pages/modules/Documents'
 import Letters from './pages/modules/Letters'
 import Budgets from './pages/modules/Budgets'
@@ -94,6 +95,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Tasks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/master-task-list"
+            element={
+              <ProtectedRoute>
+                <MasterTaskList />
               </ProtectedRoute>
             }
           />

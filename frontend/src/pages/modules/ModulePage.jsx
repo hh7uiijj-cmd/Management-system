@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', canEditItemFn, canDeleteItemFn, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
+const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -112,7 +112,7 @@ const ModulePage = ({ title, endpoint, fields, columns, ownerField = 'createdBy'
   const canEditItem = (item) => (canEditItemFn ? canEditItemFn(item, user) : defaultCanEditItem(item))
   const canDeleteItem = (item) => (canDeleteItemFn ? canDeleteItemFn(item, user) : defaultCanEditItem(item))
 
-  const canCreate = true
+  const canCreate = typeof canCreateProp === 'function' ? canCreateProp(user) : canCreateProp
 
   const handleSubmit = async (e) => {
     e.preventDefault()
