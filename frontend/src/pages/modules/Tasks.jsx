@@ -112,6 +112,17 @@ const Tasks = () => (
         { name: 'submissionText', label: 'ข้อความ/รายละเอียดที่ส่ง', type: 'textarea' },
       ],
     }}
+    searchKeys={['title', 'department', 'mainAssignee.name']}
+    filters={[
+      { key: 'department', label: 'ฝ่าย', options: DEPARTMENTS },
+      { key: 'status', label: 'สถานะ', options: TASK_STATUSES },
+      { key: 'priority', label: 'ความสำคัญ', options: TASK_PRIORITIES },
+    ]}
+    sorts={[
+      { key: 'deadline', label: 'กำหนดส่ง', defaultDir: 'asc' },
+      { key: 'title', label: 'ชื่องาน', defaultDir: 'asc' },
+      { key: 'priority', label: 'ความสำคัญ', defaultDir: 'desc' },
+    ]}
   />
 )
 
