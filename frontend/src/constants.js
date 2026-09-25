@@ -51,3 +51,18 @@ export const RISK_ISSUE_STATUSES = ['เปิด', 'กำลังแก้ไ
 export const MEMBER_WORK_STATUSES = ['ปฏิบัติงาน', 'ลาพัก', 'พ้นสภาพ']
 
 export const toOptions = (arr) => arr.map((v) => ({ value: v, label: v }))
+
+// เอาไว้แสดงชื่อคนแบบสั้นในตาราง (ชื่อเล่น + รหัส 3 หลัก) แทนชื่อ-สกุลเต็มที่ยาวจนล้น/ซ้อนกัน
+// รหัสดึงจากอีเมล u6711011553<รหัส>@mail.dusit.ac.th — ถ้าไม่มีชื่อเล่น/รหัส จะ fallback เป็นชื่อเต็ม
+export const codeFromEmail = (email) => {
+  const m = /(\d{3})@/.exec(email || '')
+  return m ? m[1] : ''
+}
+
+export const shortPersonLabel = (u) => {
+  if (!u) return '-'
+  const code = codeFromEmail(u.email)
+  const nickname = u.member?.nickname || u.nickname
+  if (nickname) return code ? `${nickname} (${code})` : nickname
+  return code ? `${u.name} (${code})` : u.name
+}

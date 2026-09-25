@@ -5,8 +5,8 @@ const auth = require('../middleware/auth');
 const { logAudit } = require('../utils/audit');
 
 const POPULATE = [
-  { path: 'responsible', select: 'name email department' },
-  { path: 'supporters', select: 'name email department' },
+  { path: 'responsible', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
+  { path: 'supporters', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
   { path: 'createdBy', select: 'name email' },
 ];
 

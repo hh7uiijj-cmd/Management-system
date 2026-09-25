@@ -421,7 +421,7 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
           ) : (
             <div className="card overflow-hidden">
               <div className="overflow-x-auto">
-                <table className="w-full">
+                <table className="min-w-full">
                   <thead className="bg-gray-50 border-b border-gray-200">
                     <tr>
                       {columns.map((c) => (

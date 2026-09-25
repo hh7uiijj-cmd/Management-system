@@ -1,6 +1,6 @@
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
-import { DEPARTMENTS, toOptions } from '../../constants'
+import { DEPARTMENTS, toOptions, shortPersonLabel } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
 const isDeptLead = (user) => ['head', 'secretary'].includes(user?.role?.name)
@@ -16,14 +16,23 @@ const fields = [
   { name: 'supporters', label: 'ผู้สนับสนุน', type: 'multiref', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
 ]
 
-const namesOf = (list) => (list?.length ? list.map((u) => u.name).join(', ') : '-')
+const PeopleList = ({ list }) =>
+  !list?.length ? (
+    <span className="text-gray-400">-</span>
+  ) : (
+    <div className="flex flex-col gap-0.5">
+      {list.map((u) => (
+        <span key={u._id} className="text-sm whitespace-nowrap">{shortPersonLabel(u)}</span>
+      ))}
+    </div>
+  )
 
 const columns = [
   { key: 'no', label: 'No.', render: (item) => item.no ?? '-' },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'task', label: 'งาน/รายงาน' },
-  { key: 'responsible', label: 'ผู้รับผิดชอบ', render: (item) => namesOf(item.responsible) },
-  { key: 'supporters', label: 'ผู้สนับสนุน', render: (item) => namesOf(item.supporters) },
+  { key: 'responsible', label: 'ผู้รับผิดชอบ', render: (item) => <PeopleList list={item.responsible} /> },
+  { key: 'supporters', label: 'ผู้สนับสนุน', render: (item) => <PeopleList list={item.supporters} /> },
 ]
 
 // หัวหน้า/เลขา/สมาชิก เห็นเฉพาะฝ่ายตัวเองอยู่แล้ว (server กรองมาให้) — ประธาน/รองประธาน/แอดมิน เห็นทุกฝ่าย

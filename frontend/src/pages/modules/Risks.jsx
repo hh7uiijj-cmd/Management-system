@@ -1,7 +1,7 @@
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
 import StatusBadge from '../../components/StatusBadge'
-import { DEPARTMENTS, RISK_ISSUE_TYPES, IMPACT_LEVELS, LIKELIHOOD_LEVELS, RISK_ISSUE_STATUSES, toOptions } from '../../constants'
+import { DEPARTMENTS, RISK_ISSUE_TYPES, IMPACT_LEVELS, LIKELIHOOD_LEVELS, RISK_ISSUE_STATUSES, toOptions, shortPersonLabel } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
 const userLabel = (u) => `${u.name}${u.nickname ? ` (${u.nickname})` : ''} · ${u.department || '-'}`
@@ -25,7 +25,16 @@ const columns = [
   { key: 'impactLevel', label: 'ผลกระทบ', render: (item) => <StatusBadge status={item.impactLevel} /> },
   { key: 'likelihoodLevel', label: 'โอกาสเกิด', render: (item) => <StatusBadge status={item.likelihoodLevel} /> },
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
-  { key: 'owner', label: 'ผู้รับผิดชอบ', render: (item) => (item.owner?.length ? item.owner.map((o) => o.name).join(', ') : '-') },
+  {
+    key: 'owner',
+    label: 'ผู้รับผิดชอบ',
+    render: (item) =>
+      item.owner?.length ? (
+        <div className="flex flex-col gap-0.5">
+          {item.owner.map((o) => <span key={o._id} className="text-sm whitespace-nowrap">{shortPersonLabel(o)}</span>)}
+        </div>
+      ) : '-',
+  },
   { key: 'createdBy', label: 'ผู้สร้างรายการ', render: (item) => item.createdBy?.name || '-' },
 ]
 

@@ -7,7 +7,7 @@ const { logAudit } = require('../utils/audit');
 
 const POPULATE = [
   { path: 'relatedTask', select: 'title' },
-  { path: 'owner', select: 'name email' },
+  { path: 'owner', select: 'name email member', populate: { path: 'member', select: 'nickname' } },
   { path: 'createdBy', select: 'name email' },
 ];
 

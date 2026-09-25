@@ -1,7 +1,7 @@
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
 import StatusBadge from '../../components/StatusBadge'
-import { DEPARTMENTS, TASK_STATUSES, TASK_PRIORITIES, toOptions } from '../../constants'
+import { DEPARTMENTS, TASK_STATUSES, TASK_PRIORITIES, toOptions, shortPersonLabel } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
 const isDeptLead = (user) => ['head', 'secretary'].includes(user?.role?.name)
@@ -28,8 +28,17 @@ const fields = [
 const columns = [
   { key: 'title', label: 'ชื่องาน' },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
-  { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', render: (item) => item.mainAssignee?.name || '-' },
-  { key: 'reviewers', label: 'ผู้อนุมัติ', render: (item) => (item.reviewers?.length ? item.reviewers.map((r) => r.name).join(', ') : '-') },
+  { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', render: (item) => shortPersonLabel(item.mainAssignee) },
+  {
+    key: 'reviewers',
+    label: 'ผู้อนุมัติ',
+    render: (item) =>
+      item.reviewers?.length ? (
+        <div className="flex flex-col gap-0.5">
+          {item.reviewers.map((r) => <span key={r._id} className="text-sm whitespace-nowrap">{shortPersonLabel(r)}</span>)}
+        </div>
+      ) : '-',
+  },
   { key: 'startDate', label: 'วันที่เริ่ม', render: (item) => item.startDate ? new Date(item.startDate).toLocaleDateString('th-TH') : '-' },
   { key: 'deadline', label: 'กำหนดส่ง', render: (item) => item.deadline ? new Date(item.deadline).toLocaleDateString('th-TH') : '-' },
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },

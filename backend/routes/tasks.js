@@ -7,9 +7,9 @@ const { logAudit } = require('../utils/audit');
 const { TASK_STATUSES } = require('../config/constants');
 
 const POPULATE = [
-  { path: 'mainAssignee', select: 'name email department' },
-  { path: 'coAssignees', select: 'name email department' },
-  { path: 'reviewers', select: 'name email department' },
+  { path: 'mainAssignee', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
+  { path: 'coAssignees', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
+  { path: 'reviewers', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
   { path: 'createdBy', select: 'name email' },
   { path: 'submittedBy', select: 'name email' },
 ];
