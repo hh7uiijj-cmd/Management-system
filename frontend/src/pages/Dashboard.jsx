@@ -23,7 +23,7 @@ const MiniStat = ({ label, value, sub, tone = 'gray', icon }) => {
       <div className="flex items-start justify-between">
         <div>
           <p className="text-xs font-medium text-gray-500">{label}</p>
-          <p className={`text-2xl font-bold mt-1 ${t.text}`}>{value}</p>
+          <p className={`text-xl font-bold mt-1 break-words ${t.text}`}>{value}</p>
           {sub && <p className="text-xs text-gray-400 mt-0.5">{sub}</p>}
         </div>
         {icon && (
@@ -69,8 +69,7 @@ const EmptyRow = ({ children }) => (
   <p className="text-gray-500 text-sm text-center py-8">{children}</p>
 )
 
-const formatMoney = (n) =>
-  (n || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+const formatMoney = (n) => (n || 0).toLocaleString('th-TH', { maximumFractionDigits: 0 })
 
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
@@ -83,7 +82,6 @@ const formatDate = (dateStr) => {
 
 const Dashboard = () => {
   const { user } = useAuth()
-  const [recentEvents, setRecentEvents] = useState([])
   const [loading, setLoading] = useState(true)
 
   const [tasks, setTasks] = useState([])
@@ -92,43 +90,42 @@ const Dashboard = () => {
   const [budgets, setBudgets] = useState([])
   const [risks, setRisks] = useState([])
   const [evidence, setEvidence] = useState([])
-  const [registrationStats, setRegistrationStats] = useState(null)
+  const [masterTaskList, setMasterTaskList] = useState([])
   const [recentCompletedTasks, setRecentCompletedTasks] = useState([])
+
+  const isTopTier = ['admin', 'president', 'vice_president'].includes(user?.role?.name)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const empty = { data: [] }
         const [
-          eventsRes,
           tasksRes,
           documentsRes,
           lettersRes,
           budgetsRes,
           risksRes,
           evidenceRes,
-          regStatsRes,
+          masterTaskListRes,
           recentCompletedRes,
         ] = await Promise.all([
-          api.get('/api/events').catch(() => empty),
           api.get('/api/tasks').catch(() => empty),
           api.get('/api/documents').catch(() => empty),
           api.get('/api/letters').catch(() => empty),
           api.get('/api/budgets').catch(() => empty),
           api.get('/api/risks').catch(() => empty),
           api.get('/api/evidence').catch(() => empty),
-          api.get('/api/registrations/stats').catch(() => ({ data: null })),
+          api.get('/api/master-task-list').catch(() => empty),
           api.get('/api/tasks/recent-completed').catch(() => empty),
         ])
 
-        setRecentEvents(eventsRes.data.slice(0, 5))
         setTasks(tasksRes.data)
         setDocuments(documentsRes.data)
         setLetters(lettersRes.data)
         setBudgets(budgetsRes.data)
         setRisks(risksRes.data)
         setEvidence(evidenceRes.data)
-        setRegistrationStats(regStatsRes.data)
+        setMasterTaskList(masterTaskListRes.data)
         setRecentCompletedTasks(recentCompletedRes.data)
       } catch (err) {
         console.error('Dashboard fetch error:', err)
@@ -169,6 +166,8 @@ const Dashboard = () => {
   const totalInitialBudget = budgets.reduce((sum, b) => sum + (b.initialBudget || 0), 0)
   const totalActualCost = budgets.reduce((sum, b) => sum + (b.actualCost || 0), 0)
 
+  const masterTaskListMissingOwner = masterTaskList.filter((m) => !m.responsible?.length).length
+
   const urgentTasks = [...upcomingTasks, ...tasks.filter(isOverdue)]
     .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
     .slice(0, 5)
@@ -187,9 +186,6 @@ const Dashboard = () => {
     }, {})
   )
 
-  const statusLabel = { active: 'เปิดรับสมัคร', closed: 'ปิดรับสมัคร', cancelled: 'ยกเลิก' }
-  const statusClass = { active: 'badge-active', closed: 'badge-closed', cancelled: 'badge-cancelled' }
-
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -199,6 +195,11 @@ const Dashboard = () => {
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-gray-800">แดชบอร์ด</h1>
             <p className="text-gray-500 mt-1">ยินดีต้อนรับ, {user?.name}</p>
+            <p className="text-xs text-indigo-500 mt-1">
+              {isTopTier
+                ? 'คุณเห็นข้อมูลทุกฝ่ายทั้งโครงการ (ยกเว้นการ์ด "งานที่เสร็จล่าสุด" ที่แสดงทุกฝ่ายเสมอ)'
+                : `ตัวเลขสรุปด้านล่างนับเฉพาะ "${user?.department || 'ฝ่ายของคุณ'}" ยกเว้นการ์ด "งานที่เสร็จล่าสุด" ที่แสดงทุกฝ่ายเสมอ`}
+            </p>
           </div>
 
           {loading ? (
@@ -214,7 +215,7 @@ const Dashboard = () => {
                 <MiniStat label="ล่าช้า / เลยกำหนด" value={overdueTasks} tone="rose" icon={Icons.flag} />
                 <MiniStat label="ใกล้ถึงกำหนด 0-3 วัน" value={upcomingTasks.length} tone="amber" icon={Icons.bell} />
                 <MiniStat label="งานเสร็จสิ้น" value={completedTasks} tone="green" icon={Icons.check} />
-                <MiniStat label="เอกสารรออนุมัติ" value={pendingDocuments.length} tone="purple" />
+                <MiniStat label="เอกสารรออนุมัติ" value={pendingDocuments.length} sub="ทุกฝ่าย" tone="purple" />
                 <MiniStat label="หนังสือรอตอบรับ" value={pendingLetters.length} tone="purple" />
                 <MiniStat label="ปัญหา/ความเสี่ยงค้าง" value={openRisks.length} tone="rose" />
                 <MiniStat label="งานเสร็จแต่ขาดหลักฐาน" value={tasksMissingEvidence} tone="amber" />
@@ -228,12 +229,7 @@ const Dashboard = () => {
                   value={`${formatMoney(totalActualCost)} บาท`}
                   tone="rose"
                 />
-                {registrationStats && (
-                  <>
-                    <MiniStat label="ผู้ลงทะเบียนรวม" value={registrationStats.total} tone="blue" />
-                    <MiniStat label="เช็คอินแล้ว" value={registrationStats.checkedIn} tone="green" />
-                  </>
-                )}
+                <MiniStat label="Master Task List ยังไม่มีผู้รับผิดชอบ" value={masterTaskListMissingOwner} tone="amber" />
               </div>
 
               {/* PRIORITY + PROGRESS */}
@@ -406,36 +402,6 @@ const Dashboard = () => {
                 )}
               </div>
 
-              {/* กิจกรรมล่าสุด */}
-              <div className="card p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-lg font-semibold text-gray-800">กิจกรรมล่าสุด</h2>
-                  <Link to="/events" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
-                    ดูทั้งหมด →
-                  </Link>
-                </div>
-                {recentEvents.length === 0 ? (
-                  <EmptyRow>ยังไม่มีกิจกรรม</EmptyRow>
-                ) : (
-                  <div className="space-y-3">
-                    {recentEvents.map((event) => (
-                      <Link
-                        key={event._id}
-                        to={`/events/${event._id}`}
-                        className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-800">{event.title}</p>
-                          <p className="text-sm text-gray-500">{formatDate(event.date)} · {event.location || 'ไม่ระบุสถานที่'}</p>
-                        </div>
-                        <span className={statusClass[event.status] || 'badge-closed'}>
-                          {statusLabel[event.status] || event.status}
-                        </span>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
             </>
           )}
         </main>
