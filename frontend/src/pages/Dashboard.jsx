@@ -6,6 +6,7 @@ import CircularProgress from '../components/CircularProgress'
 import DepartmentBadge from '../components/DepartmentBadge'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
+import { DEPARTMENTS } from '../constants'
 
 const TONES = {
   purple: { bg: 'bg-gradient-to-br from-indigo-50 to-purple-50', iconBg: 'bg-indigo-500', text: 'text-indigo-700' },
@@ -92,8 +93,10 @@ const Dashboard = () => {
   const [evidence, setEvidence] = useState([])
   const [masterTaskList, setMasterTaskList] = useState([])
   const [recentCompletedTasks, setRecentCompletedTasks] = useState([])
+  const [selectedDept, setSelectedDept] = useState('all')
 
   const isTopTier = ['admin', 'president', 'vice_president'].includes(user?.role?.name)
+  const filterByDept = (arr) => (selectedDept === 'all' ? arr : arr.filter((x) => x.department === selectedDept))
 
   useEffect(() => {
     const fetchData = async () => {
@@ -146,34 +149,43 @@ const Dashboard = () => {
   const isUpcoming3d = (t) =>
     !isDone(t) && !isCancelled(t) && !isOverdue(t) && t.deadline && new Date(t.deadline) <= in3Days
 
-  const totalTasks = tasks.length
-  const inProgressTasks = tasks.filter((t) => t.status === 'กำลังดำเนินการ').length
-  const overdueTasks = tasks.filter(isOverdue).length
-  const upcomingTasks = tasks.filter(isUpcoming3d)
-  const completedTasks = tasks.filter(isDone).length
+  const tasks_ = filterByDept(tasks)
+  const documents_ = filterByDept(documents)
+  const letters_ = filterByDept(letters)
+  const budgets_ = filterByDept(budgets)
+  const risks_ = filterByDept(risks)
+  const evidence_ = filterByDept(evidence)
+  const masterTaskList_ = filterByDept(masterTaskList)
+  const recentCompletedTasks_ = filterByDept(recentCompletedTasks)
+
+  const totalTasks = tasks_.length
+  const inProgressTasks = tasks_.filter((t) => t.status === 'กำลังดำเนินการ').length
+  const overdueTasks = tasks_.filter(isOverdue).length
+  const upcomingTasks = tasks_.filter(isUpcoming3d)
+  const completedTasks = tasks_.filter(isDone).length
 
   const evidenceTaskIds = new Set(
-    evidence.map((e) => (typeof e.relatedTask === 'object' ? e.relatedTask?._id : e.relatedTask))
+    evidence_.map((e) => (typeof e.relatedTask === 'object' ? e.relatedTask?._id : e.relatedTask))
   )
-  const tasksMissingEvidence = tasks.filter((t) => isDone(t) && !evidenceTaskIds.has(t._id)).length
+  const tasksMissingEvidence = tasks_.filter((t) => isDone(t) && !evidenceTaskIds.has(t._id)).length
 
-  const pendingDocuments = documents.filter((d) =>
+  const pendingDocuments = documents_.filter((d) =>
     ['รอตรวจสอบ', 'รอผู้บริหารอนุมัติ'].includes(d.approvalStatus)
   )
-  const pendingLetters = letters.filter((l) => l.status === 'รอตอบรับ')
-  const openRisks = risks.filter((r) => r.status !== 'ปิดเรื่อง')
+  const pendingLetters = letters_.filter((l) => l.status === 'รอตอบรับ')
+  const openRisks = risks_.filter((r) => r.status !== 'ปิดเรื่อง')
 
-  const totalInitialBudget = budgets.reduce((sum, b) => sum + (b.initialBudget || 0), 0)
-  const totalActualCost = budgets.reduce((sum, b) => sum + (b.actualCost || 0), 0)
+  const totalInitialBudget = budgets_.reduce((sum, b) => sum + (b.initialBudget || 0), 0)
+  const totalActualCost = budgets_.reduce((sum, b) => sum + (b.actualCost || 0), 0)
 
-  const masterTaskListMissingOwner = masterTaskList.filter((m) => !m.responsible?.length).length
+  const masterTaskListMissingOwner = masterTaskList_.filter((m) => !m.responsible?.length).length
 
-  const urgentTasks = [...upcomingTasks, ...tasks.filter(isOverdue)]
+  const urgentTasks = [...upcomingTasks, ...tasks_.filter(isOverdue)]
     .sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
     .slice(0, 5)
 
   const teamStatus = Object.values(
-    tasks.reduce((acc, t) => {
+    tasks_.reduce((acc, t) => {
       const dept = t.department || 'ไม่ระบุฝ่าย'
       if (!acc[dept]) {
         acc[dept] = { department: dept, total: 0, inProgress: 0, completed: 0, overdue: 0 }
@@ -192,14 +204,33 @@ const Dashboard = () => {
       <div className="flex flex-1">
         <Sidebar />
         <main className="flex-1 p-8">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">แดชบอร์ด</h1>
-            <p className="text-gray-500 mt-1">ยินดีต้อนรับ, {user?.name}</p>
-            <p className="text-xs text-indigo-500 mt-1">
-              {isTopTier
-                ? 'คุณเห็นข้อมูลทุกฝ่ายทั้งโครงการ (ยกเว้นการ์ด "งานที่เสร็จล่าสุด" ที่แสดงทุกฝ่ายเสมอ)'
-                : `ตัวเลขสรุปด้านล่างนับเฉพาะ "${user?.department || 'ฝ่ายของคุณ'}" ยกเว้นการ์ด "งานที่เสร็จล่าสุด" ที่แสดงทุกฝ่ายเสมอ`}
-            </p>
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">แดชบอร์ด</h1>
+              <p className="text-gray-500 mt-1">ยินดีต้อนรับ, {user?.name}</p>
+              <p className="text-xs text-indigo-500 mt-1">
+                {!isTopTier
+                  ? `ตัวเลขสรุปด้านล่างนับเฉพาะ "${user?.department || 'ฝ่ายของคุณ'}" ยกเว้นการ์ด "งานที่เสร็จล่าสุด" ที่แสดงทุกฝ่ายเสมอ`
+                  : selectedDept === 'all'
+                    ? 'กำลังดูข้อมูลรวมทั้งโครงการ (ทุกฝ่าย)'
+                    : `กำลังดูข้อมูลเฉพาะ "${selectedDept}" (การ์ด "งานที่เสร็จล่าสุด" ก็กรองตามนี้ด้วย)`}
+              </p>
+            </div>
+            {isTopTier && (
+              <div>
+                <label className="block text-xs font-medium text-gray-500 mb-1">มุมมองแดชบอร์ด</label>
+                <select
+                  className="input-field"
+                  value={selectedDept}
+                  onChange={(e) => setSelectedDept(e.target.value)}
+                >
+                  <option value="all">รวมทั้งโครงการ</option>
+                  {DEPARTMENTS.map((d) => (
+                    <option key={d} value={d}>แยกฝ่าย: {d}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
 
           {loading ? (
@@ -215,7 +246,7 @@ const Dashboard = () => {
                 <MiniStat label="ล่าช้า / เลยกำหนด" value={overdueTasks} tone="rose" icon={Icons.flag} />
                 <MiniStat label="ใกล้ถึงกำหนด 0-3 วัน" value={upcomingTasks.length} tone="amber" icon={Icons.bell} />
                 <MiniStat label="งานเสร็จสิ้น" value={completedTasks} tone="green" icon={Icons.check} />
-                <MiniStat label="เอกสารรออนุมัติ" value={pendingDocuments.length} sub="ทุกฝ่าย" tone="purple" />
+                <MiniStat label="เอกสารรออนุมัติ" value={pendingDocuments.length} sub={!isTopTier ? 'ทุกฝ่าย' : undefined} tone="purple" />
                 <MiniStat label="หนังสือรอตอบรับ" value={pendingLetters.length} tone="purple" />
                 <MiniStat label="ปัญหา/ความเสี่ยงค้าง" value={openRisks.length} tone="rose" />
                 <MiniStat label="งานเสร็จแต่ขาดหลักฐาน" value={tasksMissingEvidence} tone="amber" />
@@ -285,12 +316,14 @@ const Dashboard = () => {
               {/* งานที่เสร็จล่าสุด — ทุกฝ่ายเห็นได้ ไม่จำกัดเฉพาะฝ่ายตัวเอง */}
               <div className="card p-6 mb-8">
                 <h2 className="text-lg font-semibold text-gray-800 mb-1">งานที่เสร็จล่าสุด</h2>
-                <p className="text-sm text-gray-500 mb-4">งานที่เพิ่งเสร็จสิ้นล่าสุดจากทุกฝ่าย</p>
-                {recentCompletedTasks.length === 0 ? (
+                <p className="text-sm text-gray-500 mb-4">
+                  {selectedDept === 'all' ? 'งานที่เพิ่งเสร็จสิ้นล่าสุดจากทุกฝ่าย' : `งานที่เพิ่งเสร็จสิ้นล่าสุดของ "${selectedDept}"`}
+                </p>
+                {recentCompletedTasks_.length === 0 ? (
                   <EmptyRow>ยังไม่มีงานที่เสร็จสิ้น</EmptyRow>
                 ) : (
                   <div className="space-y-2">
-                    {recentCompletedTasks.map((task) => (
+                    {recentCompletedTasks_.map((task) => (
                       <Link
                         key={task._id}
                         to="/tasks"
