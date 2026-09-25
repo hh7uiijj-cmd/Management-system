@@ -21,12 +21,14 @@ const columns = [
 const EvidencePage = () => (
   <ModulePage
     title="หลักฐาน (Evidence)"
+    showDeptScopeNote
     endpoint="/api/evidence"
     fields={fields}
     columns={columns}
     ownerField="uploadedBy"
     allowEdit={false}
-    searchKeys={['description', 'department']}
+    searchKeys={['description', 'department', 'relatedTask.title']}
+    filters={[{ key: 'department', label: 'ฝ่าย', options: DEPARTMENTS }]}
     sorts={[{ key: 'createdAt', label: 'วันที่อัปโหลด', defaultDir: 'desc' }]}
   />
 )

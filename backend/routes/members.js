@@ -57,9 +57,10 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: 'คุณสามารถแก้ไขสมาชิกได้เฉพาะในฝ่ายของตัวเองเท่านั้น' });
     }
 
-    const { name, nickname, position, phone, email, workStatus, note } = req.body;
+    const { name, nickname, department, position, phone, email, workStatus, note } = req.body;
     if (name) member.name = name;
     if (nickname !== undefined) member.nickname = nickname;
+    if (department && ['admin', 'president', 'vice_president'].includes(role)) member.department = department;
     if (position !== undefined) member.position = position;
     if (phone !== undefined) member.phone = phone;
     if (email !== undefined) member.email = email;

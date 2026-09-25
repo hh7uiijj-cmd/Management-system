@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, subtitle, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
+const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -280,6 +280,15 @@ const ModulePage = ({ title, subtitle, endpoint, fields, columns, ownerField = '
               <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
               {subtitle && <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>}
               <p className="text-gray-500 mt-1">ทั้งหมด {items.length} รายการ</p>
+              {showDeptScopeNote && (
+                <p className="text-xs text-indigo-500 mt-0.5">
+                  {!deptScopedForNonTopTier
+                    ? 'ทุกฝ่ายเห็นรายการนี้เหมือนกันหมด'
+                    : isTopTier
+                      ? 'คุณเห็นข้อมูลทุกฝ่ายทั้งโครงการ'
+                      : `แสดงเฉพาะข้อมูลของฝ่าย "${user?.department || '-'}"`}
+                </p>
+              )}
             </div>
             <div className="flex gap-2">
               <button onClick={fetchItems} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 text-sm">

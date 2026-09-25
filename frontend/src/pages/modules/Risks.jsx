@@ -14,7 +14,7 @@ const fields = [
   { name: 'impactLevel', label: 'ระดับผลกระทบ', type: 'select', options: toOptions(IMPACT_LEVELS) },
   { name: 'likelihoodLevel', label: 'ระดับโอกาสเกิด', type: 'select', options: toOptions(LIKELIHOOD_LEVELS) },
   { name: 'status', label: 'สถานะ', type: 'select', options: toOptions(RISK_ISSUE_STATUSES) },
-  { name: 'owner', label: 'ผู้รับผิดชอบ', type: 'searchref', optionsEndpoint: '/api/users/directory', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+  { name: 'owner', label: 'ผู้รับผิดชอบ', type: 'multiref', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
   { name: 'mitigation', label: 'แนวทางแก้ไข/ป้องกัน', type: 'textarea' },
 ]
 
@@ -25,16 +25,19 @@ const columns = [
   { key: 'impactLevel', label: 'ผลกระทบ', render: (item) => <StatusBadge status={item.impactLevel} /> },
   { key: 'likelihoodLevel', label: 'โอกาสเกิด', render: (item) => <StatusBadge status={item.likelihoodLevel} /> },
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
+  { key: 'owner', label: 'ผู้รับผิดชอบ', render: (item) => (item.owner?.length ? item.owner.map((o) => o.name).join(', ') : '-') },
 ]
 
 const Risks = () => (
   <ModulePage
     title="ความเสี่ยง/ปัญหา (Risk & Issue)"
+    showDeptScopeNote
     endpoint="/api/risks"
     fields={fields}
     columns={columns}
     searchKeys={['title', 'department']}
     filters={[
+      { key: 'department', label: 'ฝ่าย', options: DEPARTMENTS },
       { key: 'type', label: 'ประเภท', options: RISK_ISSUE_TYPES },
       { key: 'status', label: 'สถานะ', options: RISK_ISSUE_STATUSES },
     ]}

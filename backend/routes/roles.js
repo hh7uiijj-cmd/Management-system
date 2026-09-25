@@ -40,6 +40,7 @@ router.post('/', auth, checkPermission('manage_roles'), async (req, res) => {
 });
 
 // PUT /api/roles/:id
+// role 'admin' ต้องคง manage_roles/manage_users ไว้เสมอ ป้องกันแอดมินเผลอถอดสิทธิ์ตัวเองจนล็อกระบบ
 router.put('/:id', auth, checkPermission('manage_roles'), async (req, res) => {
   try {
     const { displayName, permissions } = req.body;
@@ -50,7 +51,12 @@ router.put('/:id', auth, checkPermission('manage_roles'), async (req, res) => {
     }
 
     if (displayName) role.displayName = displayName;
-    if (permissions !== undefined) role.permissions = permissions;
+    if (permissions !== undefined) {
+      if (role.name === 'admin' && (!permissions.includes('manage_roles') || !permissions.includes('manage_users'))) {
+        return res.status(400).json({ message: 'ไม่สามารถถอดสิทธิ์ manage_roles/manage_users ออกจาก Role admin ได้ เพราะจะทำให้ไม่มีใครเข้าหน้าจัดการผู้ใช้/Role ได้อีก' });
+      }
+      role.permissions = permissions;
+    }
 
     await role.save();
     res.json(role);
@@ -66,6 +72,10 @@ router.delete('/:id', auth, checkPermission('manage_roles'), async (req, res) =>
     const role = await Role.findById(req.params.id);
     if (!role) {
       return res.status(404).json({ message: 'ไม่พบ Role นี้' });
+    }
+
+    if (['admin', 'member'].includes(role.name)) {
+      return res.status(400).json({ message: 'ไม่สามารถลบ Role พื้นฐานของระบบนี้ได้' });
     }
 
     const usersWithRole = await User.countDocuments({ role: req.params.id });

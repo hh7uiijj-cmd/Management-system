@@ -24,16 +24,21 @@ const columns = [
   { key: 'sentTo', label: 'ส่งถึง' },
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
   { key: 'dueDate', label: 'กำหนดตอบกลับ', render: (item) => item.dueDate ? new Date(item.dueDate).toLocaleDateString('th-TH') : '-' },
+  { key: 'createdBy', label: 'ผู้สร้างรายการ', render: (item) => item.createdBy?.name || '-' },
 ]
 
 const Letters = () => (
   <ModulePage
     title="หนังสือราชการ (Letter Tracker)"
+    showDeptScopeNote
     endpoint="/api/letters"
     fields={fields}
     columns={columns}
     searchKeys={['letterNumber', 'subject', 'sentTo', 'department']}
-    filters={[{ key: 'status', label: 'สถานะตอบกลับ', options: LETTER_STATUSES }]}
+    filters={[
+      { key: 'department', label: 'ฝ่าย', options: DEPARTMENTS },
+      { key: 'status', label: 'สถานะตอบกลับ', options: LETTER_STATUSES },
+    ]}
     sorts={[
       { key: 'dueDate', label: 'กำหนดตอบกลับ', defaultDir: 'asc' },
       { key: 'createdAt', label: 'วันที่หนังสือ', defaultDir: 'desc' },

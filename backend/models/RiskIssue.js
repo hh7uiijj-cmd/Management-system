@@ -43,11 +43,10 @@ const riskIssueSchema = new mongoose.Schema({
     trim: true,
     default: '',
   },
-  owner: {
+  owner: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null,
-  },
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

@@ -144,37 +144,10 @@ const Sidebar = () => {
             }
           />
         )}
-        <div className="pt-3 pb-1">
-          <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">การลงทะเบียนกิจกรรม</p>
-        </div>
-        {hasPermission('approve_registrations') && (
-          <NavItem
-            to="/approval"
-            label="อนุมัติการลงทะเบียน"
-            icon={
-              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
-          />
-        )}
-        {hasPermission('manage_events') && (
-          <>
-            <div className="pt-3 pb-1">
-              <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">การจัดการ</p>
-            </div>
-            <NavItem
-              to="/admin/events"
-              label="จัดการกิจกรรม"
-              icon={
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" className="w-5 h-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              }
-            />
-          </>
+        {(hasPermission('manage_users') || hasPermission('manage_roles')) && (
+          <div className="pt-3 pb-1">
+            <p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">การจัดการ</p>
+          </div>
         )}
         {hasPermission('manage_users') && (
           <NavItem

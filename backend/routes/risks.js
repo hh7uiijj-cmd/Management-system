@@ -34,7 +34,7 @@ router.post('/', auth, moduleAccess('create'), async (req, res) => {
 
     const risk = new RiskIssue({
       title, type, department, relatedTask: relatedTask || null,
-      impactLevel, likelihoodLevel, status, mitigation, owner: owner || null, createdBy: req.user._id,
+      impactLevel, likelihoodLevel, status, mitigation, owner: owner || [], createdBy: req.user._id,
     });
     await risk.save();
     await risk.populate(POPULATE);
@@ -62,7 +62,7 @@ router.put('/:id', auth, moduleAccess('edit'), async (req, res) => {
     if (likelihoodLevel) risk.likelihoodLevel = likelihoodLevel;
     if (status) risk.status = status;
     if (mitigation !== undefined) risk.mitigation = mitigation;
-    if (owner !== undefined) risk.owner = owner;
+    if (owner !== undefined) risk.owner = owner || [];
     if (relatedTask !== undefined) risk.relatedTask = relatedTask;
 
     await risk.save();

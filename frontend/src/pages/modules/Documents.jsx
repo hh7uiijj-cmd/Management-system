@@ -41,6 +41,8 @@ const columns = [
 const Documents = () => (
   <ModulePage
     title="เอกสาร (Document)"
+    showDeptScopeNote
+    deptScopedForNonTopTier={false}
     endpoint="/api/documents"
     fields={fields}
     columns={columns}
@@ -50,6 +52,7 @@ const Documents = () => (
     approveOptions={DOCUMENT_APPROVAL_STATUSES}
     searchKeys={['title', 'department']}
     filters={[
+      { key: 'department', label: 'ฝ่าย', options: DEPARTMENTS },
       { key: 'category', label: 'หมวดหมู่', options: DOCUMENT_CATEGORIES },
       { key: 'approvalStatus', label: 'สถานะ', options: DOCUMENT_APPROVAL_STATUSES },
     ]}

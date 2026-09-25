@@ -64,6 +64,19 @@ router.put('/:id/role', auth, checkPermission('manage_users'), async (req, res) 
       if (!role) {
         return res.status(404).json({ message: 'ไม่พบ Role ที่ระบุ' });
       }
+
+      // กันเผลอลด role ของแอดมินคนสุดท้ายในระบบ จนไม่มีใครมีสิทธิ์แอดมินอีกเลย
+      if (String(user.role) !== String(roleId)) {
+        const currentRole = await Role.findById(user.role);
+        if (currentRole?.name === 'admin' && role.name !== 'admin') {
+          const adminRole = await Role.findOne({ name: 'admin' });
+          const adminCount = await User.countDocuments({ role: adminRole._id });
+          if (adminCount <= 1) {
+            return res.status(400).json({ message: 'ไม่สามารถลด role ผู้ใช้นี้ได้ เพราะเป็นแอดมินคนสุดท้ายในระบบ' });
+          }
+        }
+      }
+
       user.role = roleId;
     }
     if (department !== undefined) user.department = department;
@@ -94,9 +107,17 @@ router.delete('/:id', auth, checkPermission('manage_users'), async (req, res) =>
       return res.status(400).json({ message: 'ไม่สามารถลบบัญชีของตัวเองได้' });
     }
 
-    const user = await User.findById(req.params.id);
+    const user = await User.findById(req.params.id).populate('role', 'name');
     if (!user) {
       return res.status(404).json({ message: 'ไม่พบผู้ใช้นี้' });
+    }
+
+    if (user.role?.name === 'admin') {
+      const adminRole = await Role.findOne({ name: 'admin' });
+      const adminCount = await User.countDocuments({ role: adminRole._id });
+      if (adminCount <= 1) {
+        return res.status(400).json({ message: 'ไม่สามารถลบผู้ใช้นี้ได้ เพราะเป็นแอดมินคนสุดท้ายในระบบ' });
+      }
     }
 
     await user.deleteOne();

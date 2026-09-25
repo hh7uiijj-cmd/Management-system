@@ -31,6 +31,11 @@ router.post('/', auth, moduleAccess('create'), async (req, res) => {
       return res.status(403).json({ message: 'คุณสามารถเพิ่มหนังสือได้เฉพาะในฝ่ายของตัวเองเท่านั้น' });
     }
 
+    const existing = await LetterTracker.findOne({ letterNumber: letterNumber.trim() });
+    if (existing) {
+      return res.status(400).json({ message: `เลขที่หนังสือ "${letterNumber}" ถูกใช้ไปแล้ว กรุณาใช้เลขอื่น` });
+    }
+
     const letter = new LetterTracker({
       letterNumber, subject, department, sentTo, sentDate, dueDate,
       relatedTask: relatedTask || null, status, fileUrl, createdBy: req.user._id,

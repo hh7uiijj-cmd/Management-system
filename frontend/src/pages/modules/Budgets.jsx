@@ -23,16 +23,21 @@ const columns = [
   { key: 'initialBudget', label: 'งบตั้งต้น', render: (item) => fmt(item.initialBudget) },
   { key: 'estimatedCost', label: 'ประมาณการ', render: (item) => fmt(item.estimatedCost) },
   { key: 'actualCost', label: 'ค่าใช้จ่ายจริง', render: (item) => fmt(item.actualCost) },
+  { key: 'createdBy', label: 'ผู้สร้างรายการ', render: (item) => item.createdBy?.name || '-' },
 ]
 
 const Budgets = () => (
   <ModulePage
     title="งบประมาณ (Budget)"
+    showDeptScopeNote
     endpoint="/api/budgets"
     fields={fields}
     columns={columns}
     searchKeys={['item', 'department']}
-    filters={[{ key: 'category', label: 'หมวดหมู่', options: BUDGET_CATEGORIES }]}
+    filters={[
+      { key: 'department', label: 'ฝ่าย', options: DEPARTMENTS },
+      { key: 'category', label: 'หมวดหมู่', options: BUDGET_CATEGORIES },
+    ]}
     sorts={[
       { key: 'createdAt', label: 'วันที่สร้าง', defaultDir: 'desc' },
       { key: 'actualCost', label: 'ค่าใช้จ่ายจริง', defaultDir: 'desc' },
