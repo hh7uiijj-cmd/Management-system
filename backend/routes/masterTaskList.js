@@ -9,13 +9,16 @@ const POPULATE = [
   { path: 'createdBy', select: 'name email' },
 ];
 
-// เพิ่ม/แก้ไข/ลบ ได้เฉพาะแอดมิน/ประธาน/รองประธาน/หัวหน้าฝ่าย/เลขาฝ่าย (ทุกฝ่าย ไม่จำกัดฝ่ายตัวเอง) — สมาชิกทั่วไปดูได้อย่างเดียว
-const canManage = (req) => ['admin', 'president', 'vice_president', 'head', 'secretary'].includes(req.user.role?.name);
+const TOP_TIERS = ['admin', 'president', 'vice_president'];
+const isTopTier = (req) => TOP_TIERS.includes(req.user.role?.name);
+const isDeptLead = (req) => ['head', 'secretary'].includes(req.user.role?.name);
 
-// GET /api/master-task-list — ทุกคนที่ล็อกอินดูได้ (ไม่แบ่งฝ่าย)
+// หัวหน้า/เลขา/สมาชิก เห็นได้เฉพาะฝ่ายตัวเอง — ประธาน/รองประธาน/แอดมิน เห็นได้ทุกฝ่าย (เลือกดูทีละฝ่ายได้ที่ฝั่ง UI)
+// GET /api/master-task-list
 router.get('/', auth, async (req, res) => {
   try {
-    const items = await MasterTaskItem.find({}).populate(POPULATE).sort({ no: 1, createdAt: 1 });
+    const filter = isTopTier(req) ? {} : { department: req.user.department };
+    const items = await MasterTaskItem.find(filter).populate(POPULATE).sort({ department: 1, no: 1, createdAt: 1 });
     res.json(items);
   } catch (error) {
     console.error('Get master task list error:', error);
@@ -23,15 +26,21 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-// POST /api/master-task-list
+// POST /api/master-task-list — แอดมิน/ประธาน/รองประธานเลือกฝ่ายได้เอง ส่วนหัวหน้า/เลขาเพิ่มได้เฉพาะฝ่ายตัวเอง
 router.post('/', auth, async (req, res) => {
   try {
-    if (!canManage(req)) return res.status(403).json({ message: 'คุณไม่มีสิทธิ์เพิ่มรายการนี้' });
+    if (!isTopTier(req) && !isDeptLead(req)) {
+      return res.status(403).json({ message: 'คุณไม่มีสิทธิ์เพิ่มรายการนี้' });
+    }
 
     const { no, task, responsible } = req.body;
     if (!task) return res.status(400).json({ message: 'กรุณากรอกชื่องาน/รายงาน' });
 
+    const department = isTopTier(req) ? req.body.department : req.user.department;
+    if (!department) return res.status(400).json({ message: 'กรุณาระบุฝ่าย' });
+
     const item = new MasterTaskItem({
+      department,
       no: no === '' || no === undefined ? null : no,
       task,
       responsible: responsible || null,
@@ -40,7 +49,7 @@ router.post('/', auth, async (req, res) => {
     await item.save();
     await item.populate(POPULATE);
 
-    await logAudit({ req, module: 'MASTER_TASK_LIST', action: 'create', entityId: item._id, summary: `เพิ่มรายการ: ${item.task}` });
+    await logAudit({ req, module: 'MASTER_TASK_LIST', action: 'create', entityId: item._id, department: item.department, summary: `เพิ่มรายการ: ${item.task}` });
 
     res.status(201).json(item);
   } catch (error) {
@@ -52,10 +61,12 @@ router.post('/', auth, async (req, res) => {
 // PUT /api/master-task-list/:id
 router.put('/:id', auth, async (req, res) => {
   try {
-    if (!canManage(req)) return res.status(403).json({ message: 'คุณไม่มีสิทธิ์แก้ไขรายการนี้' });
-
     const item = await MasterTaskItem.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'ไม่พบรายการนี้' });
+
+    if (!isTopTier(req) && !(isDeptLead(req) && item.department === req.user.department)) {
+      return res.status(403).json({ message: 'คุณไม่มีสิทธิ์แก้ไขรายการนี้' });
+    }
 
     const { no, task, responsible } = req.body;
     if (no !== undefined) item.no = no === '' ? null : no;
@@ -65,7 +76,7 @@ router.put('/:id', auth, async (req, res) => {
     await item.save();
     await item.populate(POPULATE);
 
-    await logAudit({ req, module: 'MASTER_TASK_LIST', action: 'update', entityId: item._id, summary: `แก้ไขรายการ: ${item.task}` });
+    await logAudit({ req, module: 'MASTER_TASK_LIST', action: 'update', entityId: item._id, department: item.department, summary: `แก้ไขรายการ: ${item.task}` });
 
     res.json(item);
   } catch (error) {
@@ -77,14 +88,16 @@ router.put('/:id', auth, async (req, res) => {
 // DELETE /api/master-task-list/:id
 router.delete('/:id', auth, async (req, res) => {
   try {
-    if (!canManage(req)) return res.status(403).json({ message: 'คุณไม่มีสิทธิ์ลบรายการนี้' });
-
     const item = await MasterTaskItem.findById(req.params.id);
     if (!item) return res.status(404).json({ message: 'ไม่พบรายการนี้' });
 
+    if (!isTopTier(req) && !(isDeptLead(req) && item.department === req.user.department)) {
+      return res.status(403).json({ message: 'คุณไม่มีสิทธิ์ลบรายการนี้' });
+    }
+
     await item.deleteOne();
 
-    await logAudit({ req, module: 'MASTER_TASK_LIST', action: 'delete', entityId: item._id, summary: `ลบรายการ: ${item.task}` });
+    await logAudit({ req, module: 'MASTER_TASK_LIST', action: 'delete', entityId: item._id, department: item.department, summary: `ลบรายการ: ${item.task}` });
 
     res.json({ message: 'ลบรายการเรียบร้อยแล้ว' });
   } catch (error) {

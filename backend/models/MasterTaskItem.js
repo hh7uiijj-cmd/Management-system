@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
+const { DEPARTMENTS } = require('../config/constants');
 
-// MASTER_TASK_LIST — รายการงาน/รายงานหลักของทั้งโครงการ (No. / งาน-รายงาน / ผู้รับผิดชอบ)
-// แยกจาก TASK_MASTER ใช้เป็นรายการสรุปภาพรวม ไม่แบ่งตามฝ่าย
+// MASTER_TASK_LIST — รายการงาน/รายงานหลักของแต่ละฝ่าย (No. / งาน-รายงาน / ผู้รับผิดชอบ)
+// แยกจาก TASK_MASTER ใช้เป็นรายการสรุปภาพรวม แบ่งตามฝ่ายเหมือนโมดูลอื่น
 const masterTaskItemSchema = new mongoose.Schema({
+  department: {
+    type: String,
+    enum: DEPARTMENTS,
+    required: true,
+  },
   no: {
     type: Number,
     default: null,
