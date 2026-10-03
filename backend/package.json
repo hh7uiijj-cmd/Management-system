@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "seed": "node seed.js",
     "seed:master-task-list-admin": "node scripts/seedMasterTaskListAdmin.js",
-    "seed:master-task-list-exhibition": "node scripts/seedMasterTaskListExhibition.js"
+    "seed:master-task-list-exhibition": "node scripts/seedMasterTaskListExhibition.js",
+    "seed:master-task-list-welfare": "node scripts/seedMasterTaskListWelfare.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
