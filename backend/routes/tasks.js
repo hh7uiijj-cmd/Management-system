@@ -10,8 +10,8 @@ const POPULATE = [
   { path: 'mainAssignee', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
   { path: 'coAssignees', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
   { path: 'reviewers', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
-  { path: 'createdBy', select: 'name email' },
-  { path: 'submittedBy', select: 'name email' },
+  { path: 'createdBy', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
+  { path: 'submissions.submittedBy', select: 'name email department member', populate: { path: 'member', select: 'nickname' } },
 ];
 
 // หัวหน้า/เลขาฝ่ายธุรการและงานประเมิน ดูงานได้ทุกฝ่ายเหมือนประธาน (เพื่องานติดตาม/ประเมินผลรวมทั้งโครงการ)
@@ -57,9 +57,24 @@ const canDeleteTask = (req, task) => {
   return String(task.createdBy) === String(req.user._id);
 };
 
+// ตรวจจับงานที่เลยกำหนดส่งแล้วแต่ยังไม่ถูกตีสถานะ "ล่าช้า" — เช็คทุกครั้งที่มีการดึงรายการงาน (lazy, ไม่ต้องมี cron job แยก)
+// deadline ถูกเก็บเป็นเที่ยงคืน UTC ของวันนั้น ดังนั้นยังไม่ถือว่าล่าช้าจนกว่าจะข้ามวันถัดไป (เช่น กำหนดส่งวันที่ 13 ยังไม่ล่าช้าจนกว่าจะถึงวันที่ 14)
+const startOfTodayUTC = () => {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+};
+const autoMarkOverdue = async (filter = {}) => {
+  await TaskMaster.updateMany(
+    { ...filter, deadline: { $lt: startOfTodayUTC() }, status: { $nin: ['เสร็จสิ้น', 'ยกเลิก', 'ล่าช้า'] } },
+    { $set: { status: 'ล่าช้า' } }
+  );
+};
+
 // GET /api/tasks
 router.get('/', auth, moduleAccess('view'), async (req, res) => {
   try {
+    await autoMarkOverdue();
     const tasks = await TaskMaster.find(taskViewFilter(req))
       .populate(POPULATE)
       .sort({ deadline: 1 });
@@ -87,6 +102,7 @@ router.get('/recent-completed', auth, async (req, res) => {
 // GET /api/tasks/:id
 router.get('/:id', auth, moduleAccess('view'), async (req, res) => {
   try {
+    await autoMarkOverdue({ _id: req.params.id });
     const task = await TaskMaster.findById(req.params.id).populate(POPULATE);
     if (!task) return res.status(404).json({ message: 'ไม่พบงานนี้' });
     if (!canViewTask(req, task)) {
@@ -171,7 +187,7 @@ router.put('/:id', auth, moduleAccess('edit'), async (req, res) => {
   }
 });
 
-// PUT /api/tasks/:id/submit — ผู้รับผิดชอบหลัก/ร่วม ส่งงานเป็นลิงก์และ/หรือข้อความ แล้วเปลี่ยนสถานะเป็น "รอตรวจสอบ" ให้ผู้อนุมัติ
+// PUT /api/tasks/:id/submit — ผู้รับผิดชอบหลัก/ร่วมแต่ละคนส่งงานของตัวเองแยกกัน (ไม่ทับกัน) แล้วเปลี่ยนสถานะเป็น "รอตรวจสอบ" ให้ผู้อนุมัติ
 router.put('/:id/submit', auth, async (req, res) => {
   try {
     const { submissionLink, submissionText } = req.body;
@@ -189,10 +205,15 @@ router.put('/:id/submit', auth, async (req, res) => {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์ส่งงานนี้' });
     }
 
-    task.submissionLink = submissionLink || '';
-    task.submissionText = submissionText || '';
-    task.submittedBy = req.user._id;
-    task.submittedAt = new Date();
+    // ถ้าเคยส่งไปแล้ว การส่งซ้ำจะแก้ไขทับเฉพาะรายการของตัวเอง ไม่ไปทับของคนอื่น
+    const uid = String(req.user._id);
+    task.submissions = (task.submissions || []).filter((s) => String(s.submittedBy) !== uid);
+    task.submissions.push({
+      link: submissionLink || '',
+      text: submissionText || '',
+      submittedBy: req.user._id,
+      submittedAt: new Date(),
+    });
     task.status = 'รอตรวจสอบ';
     await task.save();
     await task.populate(POPULATE);

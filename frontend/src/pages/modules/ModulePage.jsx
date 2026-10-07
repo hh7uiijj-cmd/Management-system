@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [] }) => {
+const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [], extraFilterFn, enableCardView = false }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -35,6 +35,8 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
   const [filterValues, setFilterValues] = useState({})
   const [sortKey, setSortKey] = useState(sorts[0]?.key || '')
   const [sortDir, setSortDir] = useState(sorts[0]?.defaultDir || 'desc')
+  const [viewMode, setViewMode] = useState('table')
+  const [filterOptions, setFilterOptions] = useState({})
 
   const isTopTier = ['admin', 'president', 'vice_president'].includes(user?.role?.name)
   const isDeptLead = ['head', 'secretary'].includes(user?.role?.name)
@@ -71,6 +73,12 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
       if (f.optionsEndpoint) {
         const opts = await resolveOptions(f)
         setDynamicOptions((prev) => ({ ...prev, [f.name]: opts }))
+      }
+    })
+    filters.forEach(async (f) => {
+      if (f.optionsEndpoint) {
+        const opts = await resolveOptions({ optionsEndpoint: f.optionsEndpoint, mapOption: f.mapOption })
+        setFilterOptions((prev) => ({ ...prev, [f.key]: opts }))
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -149,8 +157,13 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
   }
 
   const openSubmit = (item) => {
-    const next = {}
-    ;(submitAction?.fields || []).forEach((f) => { next[f.name] = item[f.name] ?? '' })
+    let next
+    if (submitAction?.getInitialValues) {
+      next = submitAction.getInitialValues(item, user)
+    } else {
+      next = {}
+      ;(submitAction?.fields || []).forEach((f) => { next[f.name] = item[f.name] ?? '' })
+    }
     setSubmittingItem(item)
     setSubmitForm(next)
     setMessage({ text: '', type: '' })
@@ -241,6 +254,54 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
   const renderFieldInput = (f) => renderInput(f, form, handleChange)
   const renderSubmitFieldInput = (f) => renderInput(f, submitForm, (name, value) => setSubmitForm((prev) => ({ ...prev, [name]: value })))
 
+  const renderActions = (item) => (
+    <>
+      {allowEdit && canEditItem(item) && (
+        <button onClick={() => openEdit(item)} className="text-xs px-3 py-1.5 border border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50">แก้ไข</button>
+      )}
+      {canDeleteItem(item) && (
+        <button onClick={() => handleDelete(item._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
+      )}
+      {submitAction && submitAction.visible(item, user) && (
+        <button onClick={() => openSubmit(item)} className="text-xs px-3 py-1.5 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50">
+          {submitAction.label || 'ส่งงาน'}
+        </button>
+      )}
+      {canApprove && (canApproveItem ? canApproveItem(item, user) : (isTopTier || isDeptLead)) && (
+        approveMode === 'button' ? (
+          item[approveField] === approveTriggerValue && (
+            <>
+              <button
+                onClick={() => handleApprove(item._id, approveTargetValue)}
+                className="text-xs px-3 py-1.5 border border-green-500 text-green-600 rounded-lg hover:bg-green-50"
+              >
+                {approveButtonLabel}
+              </button>
+              {rejectTargetValue && (
+                <button
+                  onClick={() => handleApprove(item._id, rejectTargetValue)}
+                  className="text-xs px-3 py-1.5 border border-amber-500 text-amber-600 rounded-lg hover:bg-amber-50"
+                >
+                  {rejectButtonLabel}
+                </button>
+              )}
+            </>
+          )
+        ) : (
+          <select
+            className="text-xs border border-gray-300 rounded-lg px-2 py-1"
+            value={item[approveField] || ''}
+            onChange={(e) => handleApprove(item._id, e.target.value)}
+          >
+            {approveOptions.map((opt) => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        )
+      )}
+    </>
+  )
+
   const resetFilters = () => {
     setSearch('')
     setFilterValues({})
@@ -248,8 +309,16 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
     setSortDir(sorts[0]?.defaultDir || 'desc')
   }
 
+  const idOfValue = (raw) => (raw && typeof raw === 'object' ? raw._id : raw)
+  const filterMatches = (item, key, v) => {
+    const raw = getByPath(item, key)
+    if (Array.isArray(raw)) return raw.some((r) => String(idOfValue(r)) === v)
+    return String(idOfValue(raw) ?? '') === v
+  }
+
   const visibleItems = items
     .filter((item) => {
+      if (extraFilterFn && !extraFilterFn(item, user)) return false
       if (search.trim() && searchKeys.length) {
         const q = search.trim().toLowerCase()
         const hit = searchKeys.some((key) => String(getByPath(item, key) ?? '').toLowerCase().includes(q))
@@ -257,7 +326,7 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
       }
       for (const f of filters) {
         const v = filterValues[f.key]
-        if (v && String(getByPath(item, f.key) ?? '') !== v) return false
+        if (v && !filterMatches(item, f.key, v)) return false
       }
       return true
     })
@@ -291,6 +360,24 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
               )}
             </div>
             <div className="flex gap-2">
+              {enableCardView && (
+                <div className="flex border border-gray-300 rounded-lg overflow-hidden text-sm">
+                  <button
+                    onClick={() => setViewMode('table')}
+                    className={`px-3 py-2 ${viewMode === 'table' ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                    title="มุมมองตาราง"
+                  >
+                    ☰ ตาราง
+                  </button>
+                  <button
+                    onClick={() => setViewMode('card')}
+                    className={`px-3 py-2 border-l border-gray-300 ${viewMode === 'card' ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                    title="มุมมองการ์ด"
+                  >
+                    ▦ การ์ด
+                  </button>
+                </div>
+              )}
               <button onClick={fetchItems} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 text-sm">
                 โหลดใหม่
               </button>
@@ -321,21 +408,24 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
                     />
                   </div>
                 )}
-                {filters.map((f) => (
-                  <div key={f.key}>
-                    <label className="block text-xs font-medium text-gray-500 mb-1">{f.label}</label>
-                    <select
-                      className="input-field"
-                      value={filterValues[f.key] || ''}
-                      onChange={(e) => setFilterValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                    >
-                      <option value="">ทั้งหมด</option>
-                      {f.options.map((opt) => (
-                        <option key={opt} value={opt}>{opt}</option>
-                      ))}
-                    </select>
-                  </div>
-                ))}
+                {filters.map((f) => {
+                  const opts = f.optionsEndpoint ? (filterOptions[f.key] || []) : (f.options || []).map((opt) => ({ value: opt, label: opt }))
+                  return (
+                    <div key={f.key}>
+                      <label className="block text-xs font-medium text-gray-500 mb-1">{f.label}</label>
+                      <select
+                        className="input-field"
+                        value={filterValues[f.key] || ''}
+                        onChange={(e) => setFilterValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                      >
+                        <option value="">ทั้งหมด</option>
+                        {opts.map((opt) => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )
+                })}
                 {sorts.length > 0 && (
                   <div>
                     <label className="block text-xs font-medium text-gray-500 mb-1">เรียงตาม</label>
@@ -418,6 +508,35 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
             <div className="flex items-center justify-center h-48">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
             </div>
+          ) : enableCardView && viewMode === 'card' ? (
+            visibleItems.length === 0 ? (
+              <div className="card p-16 flex flex-col items-center gap-2 text-gray-400">
+                <div className="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 13h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <p className="text-sm text-gray-500">
+                  {items.length === 0 ? 'ยังไม่มีข้อมูล' : 'ไม่พบรายการที่ตรงกับเงื่อนไขการค้นหา'}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {visibleItems.map((item) => (
+                  <div key={item._id} className="card p-4 flex flex-col gap-2">
+                    {columns.map((c) => (
+                      <div key={c.key} className="flex items-start justify-between gap-3 text-sm">
+                        <span className="text-xs font-medium text-gray-400 flex-shrink-0 pt-0.5">{c.label}</span>
+                        <span className="text-gray-700 text-right">{c.render ? c.render(item) : (item[c.key] ?? '-')}</span>
+                      </div>
+                    ))}
+                    <div className="flex flex-wrap gap-2 pt-2 mt-1 border-t border-gray-100">
+                      {renderActions(item)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
           ) : (
             <div className="card overflow-hidden">
               <div className="overflow-x-auto">
@@ -454,49 +573,7 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
                           </td>
                         ))}
                         <td className="px-6 py-4 space-x-2 whitespace-nowrap">
-                          {allowEdit && canEditItem(item) && (
-                            <button onClick={() => openEdit(item)} className="text-xs px-3 py-1.5 border border-indigo-500 text-indigo-600 rounded-lg hover:bg-indigo-50">แก้ไข</button>
-                          )}
-                          {canDeleteItem(item) && (
-                            <button onClick={() => handleDelete(item._id)} className="text-xs px-3 py-1.5 border border-red-500 text-red-600 rounded-lg hover:bg-red-50">ลบ</button>
-                          )}
-                          {submitAction && submitAction.visible(item, user) && (
-                            <button onClick={() => openSubmit(item)} className="text-xs px-3 py-1.5 border border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50">
-                              {submitAction.label || 'ส่งงาน'}
-                            </button>
-                          )}
-                          {canApprove && (canApproveItem ? canApproveItem(item, user) : (isTopTier || isDeptLead)) && (
-                            approveMode === 'button' ? (
-                              item[approveField] === approveTriggerValue && (
-                                <>
-                                  <button
-                                    onClick={() => handleApprove(item._id, approveTargetValue)}
-                                    className="text-xs px-3 py-1.5 border border-green-500 text-green-600 rounded-lg hover:bg-green-50"
-                                  >
-                                    {approveButtonLabel}
-                                  </button>
-                                  {rejectTargetValue && (
-                                    <button
-                                      onClick={() => handleApprove(item._id, rejectTargetValue)}
-                                      className="text-xs px-3 py-1.5 border border-amber-500 text-amber-600 rounded-lg hover:bg-amber-50"
-                                    >
-                                      {rejectButtonLabel}
-                                    </button>
-                                  )}
-                                </>
-                              )
-                            ) : (
-                              <select
-                                className="text-xs border border-gray-300 rounded-lg px-2 py-1"
-                                value={item[approveField] || ''}
-                                onChange={(e) => handleApprove(item._id, e.target.value)}
-                              >
-                                {approveOptions.map((opt) => (
-                                  <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                              </select>
-                            )
-                          )}
+                          {renderActions(item)}
                         </td>
                       </tr>
                     ))}

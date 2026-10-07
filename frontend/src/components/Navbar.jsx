@@ -29,7 +29,7 @@ const Navbar = () => {
         const uid = String(user._id)
         const now = new Date()
         const isMine = (t) =>
-          idOf(t.mainAssignee) === uid || (t.coAssignees || []).some((c) => idOf(c) === uid)
+          idOf(t.mainAssignee) === uid || (t.coAssignees || []).some((c) => idOf(c) === uid) || (t.reviewers || []).some((r) => idOf(r) === uid)
         const isMyReviewPending = (t) =>
           (t.reviewers || []).some((r) => idOf(r) === uid) && t.status === 'รอตรวจสอบ'
         const isOverdue = (t) => !['เสร็จสิ้น', 'ยกเลิก'].includes(t.status) && t.deadline && new Date(t.deadline) < now
@@ -141,7 +141,7 @@ const Navbar = () => {
 
         <div className="flex items-center gap-3 flex-shrink-0">
           <button
-            onClick={() => navigate('/tasks')}
+            onClick={() => navigate('/tasks?attention=1')}
             className="relative p-2 text-gray-500 hover:bg-gray-50 rounded-lg"
             title="งานที่ต้องติดตาม (ล่าช้า / รออนุมัติจากคุณ)"
           >

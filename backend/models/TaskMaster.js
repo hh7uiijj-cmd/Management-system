@@ -54,26 +54,13 @@ const taskMasterSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  // ส่งงาน — ผู้รับผิดชอบส่งผลงานเป็นลิงก์และ/หรือข้อความ ให้ผู้อนุมัติตรวจ
-  submissionLink: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  submissionText: {
-    type: String,
-    trim: true,
-    default: '',
-  },
-  submittedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    default: null,
-  },
-  submittedAt: {
-    type: Date,
-    default: null,
-  },
+  // ส่งงาน — ผู้รับผิดชอบหลัก/ร่วมแต่ละคนส่งผลงานของตัวเองแยกกันได้ (1 รายการต่อ 1 คน แก้ไขทับของตัวเองได้)
+  submissions: [{
+    link: { type: String, trim: true, default: '' },
+    text: { type: String, trim: true, default: '' },
+    submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    submittedAt: { type: Date, default: Date.now },
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

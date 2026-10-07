@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
 import StatusBadge from '../../components/StatusBadge'
@@ -25,10 +27,48 @@ const fields = [
   { name: 'description', label: 'รายละเอียด', type: 'textarea' },
 ]
 
+const formatDateTime = (d) => d ? new Date(d).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-'
+
+// แสดงรายการงานที่แต่ละคนส่งแยกกัน (ไม่ทับกัน) พร้อมชื่อผู้ส่งและเวลา — กดเพื่อดูรายละเอียดทั้งหมด
+const SubmissionsCell = ({ submissions }) => {
+  const [open, setOpen] = useState(false)
+  if (!submissions?.length) return <span className="text-gray-400">-</span>
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="text-xs px-2.5 py-1 border border-indigo-300 text-indigo-600 rounded-lg hover:bg-indigo-50 whitespace-nowrap"
+      >
+        ดูงานที่ส่ง ({submissions.length})
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
+          <div className="absolute left-0 top-full mt-1 w-72 bg-white rounded-xl shadow-lg border border-gray-100 z-40 p-3 space-y-3 max-h-80 overflow-y-auto">
+            {submissions.map((s, i) => (
+              <div key={i} className="text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
+                <p className="font-medium text-gray-700">{shortPersonLabel(s.submittedBy)}</p>
+                <p className="text-gray-400">{formatDateTime(s.submittedAt)}</p>
+                {s.link && (
+                  <a href={s.link} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700 underline block truncate">
+                    เปิดลิงก์งาน ↗
+                  </a>
+                )}
+                {s.text && <p className="text-gray-600 mt-0.5 whitespace-pre-wrap">{s.text}</p>}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 const columns = [
   { key: 'title', label: 'ชื่องาน' },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', render: (item) => shortPersonLabel(item.mainAssignee) },
+  { key: 'createdBy', label: 'ผู้มอบหมาย', render: (item) => <span className="text-xs text-gray-400">{shortPersonLabel(item.createdBy)}</span> },
   {
     key: 'reviewers',
     label: 'ผู้อนุมัติ',
@@ -43,30 +83,7 @@ const columns = [
   { key: 'deadline', label: 'กำหนดส่ง', render: (item) => item.deadline ? new Date(item.deadline).toLocaleDateString('th-TH') : '-' },
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
   { key: 'priority', label: 'ความสำคัญ', render: (item) => <StatusBadge status={item.priority} /> },
-  {
-    key: 'submission',
-    label: 'งานที่ส่ง',
-    render: (item) =>
-      !item.submissionLink && !item.submissionText ? (
-        <span className="text-gray-400">-</span>
-      ) : (
-        <div className="space-y-0.5 max-w-xs">
-          {item.submissionLink && (
-            <a
-              href={item.submissionLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-indigo-600 hover:text-indigo-700 font-medium underline block truncate"
-            >
-              เปิดลิงก์งาน ↗
-            </a>
-          )}
-          {item.submissionText && (
-            <p className="text-xs text-gray-500 truncate" title={item.submissionText}>{item.submissionText}</p>
-          )}
-        </div>
-      ),
-  },
+  { key: 'submissions', label: 'งานที่ส่ง', render: (item) => <SubmissionsCell submissions={item.submissions} /> },
 ]
 
 const idOf = (v) => String(v?._id || v)
@@ -79,6 +96,10 @@ const isAssignedToTask = (item, user) => {
     isReviewer(item, user)
   )
 }
+const myPendingApproval = (item, user) => isReviewer(item, user) && item.status === 'รอตรวจสอบ'
+const isOverdue = (item) => !['เสร็จสิ้น', 'ยกเลิก'].includes(item.status) && item.deadline && new Date(item.deadline) < new Date()
+const needsMyAttention = (item, user) =>
+  (isAssignedToTask(item, user) && isOverdue(item)) || myPendingApproval(item, user)
 
 // ผู้รับผิดชอบหลัก/ร่วม/ผู้อนุมัติ ต้องแก้ไข (เช่น อัปเดตสถานะ) งานที่ตัวเองถูกมอบหมายได้เสมอ แม้คนละฝ่าย
 const canEditTaskItem = (item, user) => {
@@ -95,47 +116,63 @@ const canDeleteTaskItem = (item, user) => {
   return idOf(item.createdBy) === String(user?._id)
 }
 
-const Tasks = () => (
-  <ModulePage
-    title="งาน (Task Master)"
-    subtitle="ติดตามงานแต่ละชิ้นแบบละเอียด มีกำหนดส่ง สถานะ การส่งงาน และอนุมัติงานได้"
-    endpoint="/api/tasks"
-    fields={fields}
-    columns={columns}
-    canEditItemFn={canEditTaskItem}
-    canDeleteItemFn={canDeleteTaskItem}
-    canApprove
-    approveField="status"
-    approveMode="button"
-    approveTriggerValue="รอตรวจสอบ"
-    approveTargetValue="เสร็จสิ้น"
-    approveButtonLabel="อนุมัติงาน"
-    rejectTargetValue="กำลังดำเนินการ"
-    rejectButtonLabel="ตีกลับแก้ไข"
-    canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user)}
-    submitAction={{
-      label: 'ส่งงาน',
-      formTitle: 'ส่งงาน',
-      endpointSuffix: 'submit',
-      successMessage: 'ส่งงานสำเร็จ รอผู้อนุมัติตรวจสอบ',
-      visible: (item, user) => isTopTier(user) || isDeptLead(user) || isAssignedToTask(item, user),
-      fields: [
-        { name: 'submissionLink', label: 'ลิงก์ผลงาน (ถ้ามี)', type: 'url' },
-        { name: 'submissionText', label: 'ข้อความ/รายละเอียดที่ส่ง', type: 'textarea' },
-      ],
-    }}
-    searchKeys={['title', 'department', 'mainAssignee.name']}
-    filters={[
-      { key: 'department', label: 'ฝ่าย', options: DEPARTMENTS },
-      { key: 'status', label: 'สถานะ', options: TASK_STATUSES },
-      { key: 'priority', label: 'ความสำคัญ', options: TASK_PRIORITIES },
-    ]}
-    sorts={[
-      { key: 'deadline', label: 'กำหนดส่ง', defaultDir: 'asc' },
-      { key: 'title', label: 'ชื่องาน', defaultDir: 'asc' },
-      { key: 'priority', label: 'ความสำคัญ', defaultDir: 'desc' },
-    ]}
-  />
-)
+const Tasks = () => {
+  const [searchParams] = useSearchParams()
+  const attentionOnly = searchParams.get('attention') === '1'
+
+  return (
+    <ModulePage
+      title="งาน (Task Master)"
+      subtitle={
+        attentionOnly
+          ? 'แสดงเฉพาะงานที่ต้องติดตาม: ล่าช้าและมอบหมายให้คุณ หรือรอการอนุมัติจากคุณ'
+          : 'ติดตามงานแต่ละชิ้นแบบละเอียด มีกำหนดส่ง สถานะ การส่งงาน และอนุมัติงานได้'
+      }
+      endpoint="/api/tasks"
+      fields={fields}
+      columns={columns}
+      canEditItemFn={canEditTaskItem}
+      canDeleteItemFn={canDeleteTaskItem}
+      enableCardView
+      extraFilterFn={attentionOnly ? needsMyAttention : undefined}
+      canApprove
+      approveField="status"
+      approveMode="button"
+      approveTriggerValue="รอตรวจสอบ"
+      approveTargetValue="เสร็จสิ้น"
+      approveButtonLabel="อนุมัติงาน"
+      rejectTargetValue="กำลังดำเนินการ"
+      rejectButtonLabel="ตีกลับแก้ไข"
+      canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user)}
+      submitAction={{
+        label: 'ส่งงาน',
+        formTitle: 'ส่งงาน',
+        endpointSuffix: 'submit',
+        successMessage: 'ส่งงานสำเร็จ รอผู้อนุมัติตรวจสอบ',
+        visible: (item, user) => isTopTier(user) || isDeptLead(user) || isAssignedToTask(item, user),
+        getInitialValues: (item, user) => {
+          const mine = (item.submissions || []).find((s) => idOf(s.submittedBy) === String(user?._id))
+          return { submissionLink: mine?.link || '', submissionText: mine?.text || '' }
+        },
+        fields: [
+          { name: 'submissionLink', label: 'ลิงก์ผลงาน (ถ้ามี)', type: 'url' },
+          { name: 'submissionText', label: 'ข้อความ/รายละเอียดที่ส่ง', type: 'textarea' },
+        ],
+      }}
+      searchKeys={['title', 'department', 'mainAssignee.name']}
+      filters={[
+        { key: 'department', label: 'ฝ่าย', options: DEPARTMENTS },
+        { key: 'status', label: 'สถานะ', options: TASK_STATUSES },
+        { key: 'priority', label: 'ความสำคัญ', options: TASK_PRIORITIES },
+        { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+      ]}
+      sorts={[
+        { key: 'deadline', label: 'กำหนดส่ง', defaultDir: 'asc' },
+        { key: 'title', label: 'ชื่องาน', defaultDir: 'asc' },
+        { key: 'priority', label: 'ความสำคัญ', defaultDir: 'desc' },
+      ]}
+    />
+  )
+}
 
 export default Tasks

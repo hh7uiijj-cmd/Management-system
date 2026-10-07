@@ -14,11 +14,12 @@ const TOP_TIERS = ['admin', 'president', 'vice_president'];
 const isTopTier = (req) => TOP_TIERS.includes(req.user.role?.name);
 const isDeptLead = (req) => ['head', 'secretary'].includes(req.user.role?.name);
 
-// หัวหน้า/เลขา/สมาชิก เห็นได้เฉพาะฝ่ายตัวเอง — ประธาน/รองประธาน/แอดมิน เห็นได้ทุกฝ่าย (เลือกดูทีละฝ่ายได้ที่ฝั่ง UI)
+// สมาชิกทั่วไป เห็นได้เฉพาะฝ่ายตัวเอง — หัวหน้า/เลขา/ประธาน/รองประธาน/แอดมิน เห็นได้ทุกฝ่าย (เลือกดูทีละฝ่ายได้ที่ฝั่ง UI)
+// สิทธิ์แก้ไข/ลบ ของหัวหน้า/เลขา ยังจำกัดเฉพาะฝ่ายตัวเองเหมือนเดิม — ขยายแค่สิทธิ์ "ดู" เท่านั้น
 // GET /api/master-task-list
 router.get('/', auth, async (req, res) => {
   try {
-    const filter = isTopTier(req) ? {} : { department: req.user.department };
+    const filter = isTopTier(req) || isDeptLead(req) ? {} : { department: req.user.department };
     const items = await MasterTaskItem.find(filter).populate(POPULATE).sort({ department: 1, no: 1, createdAt: 1 });
     res.json(items);
   } catch (error) {
