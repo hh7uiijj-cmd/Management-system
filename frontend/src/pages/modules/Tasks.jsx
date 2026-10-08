@@ -29,22 +29,26 @@ const fields = [
 
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('th-TH', { dateStyle: 'short', timeStyle: 'short' }) : '-'
 
-// แสดงรายการงานที่แต่ละคนส่งแยกกัน (ไม่ทับกัน) พร้อมชื่อผู้ส่งและเวลา — กดเพื่อดูรายละเอียดทั้งหมด
+// แสดงรายการงานที่แต่ละคนส่งแยกกัน (ไม่ทับกัน) พร้อมชื่อผู้ส่งและเวลา — กดเพื่อดูรายละเอียดทั้งหมดเป็น modal กลางจอ
 const SubmissionsCell = ({ submissions }) => {
   const [open, setOpen] = useState(false)
   if (!submissions?.length) return <span className="text-gray-400">-</span>
   return (
-    <div className="relative">
+    <>
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(true)}
         className="text-xs px-2.5 py-1 border border-indigo-300 text-indigo-600 rounded-lg hover:bg-indigo-50 whitespace-nowrap"
       >
         ดูงานที่ส่ง ({submissions.length})
       </button>
       {open && (
-        <>
-          <div className="fixed inset-0 z-30" onClick={() => setOpen(false)} />
-          <div className="absolute left-0 top-full mt-1 w-72 bg-white rounded-xl shadow-lg border border-gray-100 z-40 p-3 space-y-3 max-h-80 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/30" onClick={() => setOpen(false)} />
+          <div className="relative bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-md p-4 space-y-3 max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-800 text-sm">งานที่ส่งแล้ว ({submissions.length})</h3>
+              <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">✕</button>
+            </div>
             {submissions.map((s, i) => (
               <div key={i} className="text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
                 <p className="font-medium text-gray-700">{shortPersonLabel(s.submittedBy)}</p>
@@ -58,9 +62,9 @@ const SubmissionsCell = ({ submissions }) => {
               </div>
             ))}
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   )
 }
 
