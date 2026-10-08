@@ -4,7 +4,8 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors());
-app.use(express.json());
+// limit ปรับขึ้นจากค่า default (100kb) เพื่อรองรับรูปโปรไฟล์แบบ base64 data URI
+app.use(express.json({ limit: '2mb' }));
 
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/events', require('./routes/events'));

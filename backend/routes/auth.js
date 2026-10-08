@@ -51,6 +51,9 @@ router.post('/register', async (req, res) => {
         email: populatedUser.email,
         role: populatedUser.role,
         department: populatedUser.department,
+        avatar: populatedUser.avatar,
+        phone: populatedUser.phone,
+        bio: populatedUser.bio,
         createdAt: populatedUser.createdAt,
       },
     });
@@ -93,6 +96,9 @@ router.post('/login', async (req, res) => {
         email: user.email,
         role: user.role,
         department: user.department,
+        avatar: user.avatar,
+        phone: user.phone,
+        bio: user.bio,
         createdAt: user.createdAt,
       },
     });
@@ -111,10 +117,54 @@ router.get('/me', auth, async (req, res) => {
       email: req.user.email,
       role: req.user.role,
       department: req.user.department,
+      avatar: req.user.avatar,
+      phone: req.user.phone,
+      bio: req.user.bio,
       createdAt: req.user.createdAt,
     });
   } catch (error) {
     console.error('Get me error:', error);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
+  }
+});
+
+// รูปโปรไฟล์เป็น data URI (base64) — จำกัดไว้ประมาณ 1.5MB หลัง encode (รูปจริงเล็กกว่านี้มาก
+// เพราะหน้าเว็บจะย่อขนาดรูปก่อนส่งอยู่แล้ว) กันไม่ให้ document ใหญ่เกินไปใน MongoDB
+const MAX_AVATAR_LENGTH = 1.5 * 1024 * 1024;
+
+// PUT /api/auth/me — ผู้ใช้แก้ไขข้อมูลโปรไฟล์ของตัวเอง (รูปโปรไฟล์ / เบอร์โทร / แนะนำตัว)
+// ไม่อนุญาตให้แก้ name/email/role/department จากจุดนี้ เพื่อไม่ให้ชนกับข้อมูลที่ admin เป็นคนดูแล
+router.put('/me', auth, async (req, res) => {
+  try {
+    const { avatar, phone, bio } = req.body;
+
+    if (avatar !== undefined) {
+      if (avatar && !/^data:image\/(png|jpe?g|webp);base64,/.test(avatar)) {
+        return res.status(400).json({ message: 'รูปโปรไฟล์ต้องเป็นไฟล์ภาพ (png/jpg/webp) เท่านั้น' });
+      }
+      if (avatar.length > MAX_AVATAR_LENGTH) {
+        return res.status(400).json({ message: 'รูปโปรไฟล์มีขนาดใหญ่เกินไป กรุณาเลือกรูปที่เล็กลง' });
+      }
+      req.user.avatar = avatar;
+    }
+    if (phone !== undefined) req.user.phone = phone;
+    if (bio !== undefined) req.user.bio = bio;
+
+    await req.user.save();
+
+    res.json({
+      _id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      department: req.user.department,
+      avatar: req.user.avatar,
+      phone: req.user.phone,
+      bio: req.user.bio,
+      createdAt: req.user.createdAt,
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในเซิร์ฟเวอร์' });
   }
 });

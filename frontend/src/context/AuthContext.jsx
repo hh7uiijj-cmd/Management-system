@@ -43,6 +43,12 @@ export const AuthProvider = ({ children }) => {
     return data
   }
 
+  // ใช้หลังแก้ไขโปรไฟล์ตัวเอง (รูป/เบอร์โทร/แนะนำตัว) เพื่ออัปเดต state + localStorage ให้ตรงกับเซิร์ฟเวอร์ทันที
+  const updateUser = (nextUser) => {
+    setUser(nextUser)
+    localStorage.setItem('user', JSON.stringify(nextUser))
+  }
+
   const logout = () => {
     setToken(null)
     setUser(null)
@@ -55,7 +61,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, logout, hasPermission }}>
+    <AuthContext.Provider value={{ user, token, loading, login, logout, hasPermission, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

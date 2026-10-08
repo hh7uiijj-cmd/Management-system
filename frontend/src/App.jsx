@@ -20,6 +20,7 @@ import Risks from './pages/modules/Risks'
 import EvidencePage from './pages/modules/Evidence'
 import Members from './pages/modules/Members'
 import AuditLog from './pages/modules/AuditLog'
+import Profile from './pages/Profile'
 
 function App() {
   return (
@@ -161,6 +162,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AuditLog />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
               </ProtectedRoute>
             }
           />

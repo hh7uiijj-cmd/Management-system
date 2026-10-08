@@ -35,6 +35,22 @@ const userSchema = new mongoose.Schema({
     ref: 'Member',
     default: null,
   },
+  // ข้อมูลโปรไฟล์ที่ผู้ใช้แก้ไขเองได้ — avatar เก็บเป็น data URI (base64) ตรงใน MongoDB
+  // เพราะเซิร์ฟเวอร์ไม่มี persistent disk/ที่เก็บไฟล์แยกต่างหาก
+  avatar: {
+    type: String,
+    default: '',
+  },
+  phone: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  bio: {
+    type: String,
+    trim: true,
+    default: '',
+  },
   createdAt: {
     type: Date,
     default: Date.now,
