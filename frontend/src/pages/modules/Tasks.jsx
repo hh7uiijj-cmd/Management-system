@@ -148,7 +148,7 @@ const Tasks = () => {
       approveGateFn={(item) => item.submissions?.length > 0}
       rejectTargetValue="กำลังดำเนินการ"
       rejectButtonLabel="ตีกลับแก้ไข"
-      canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user)}
+      canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user) || (isDeptLead(user) && item.department === user.department)}
       submitAction={{
         label: 'ส่งงาน',
         formTitle: 'ส่งงาน',
