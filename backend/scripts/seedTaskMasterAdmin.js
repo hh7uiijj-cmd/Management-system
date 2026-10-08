@@ -83,15 +83,15 @@ async function run() {
   await mongoose.connect(process.env.MONGODB_URI);
   console.log('Connected to MongoDB');
 
-  const admin = await User.findOne({ email: 'DaoCha@gmail.com' });
-  if (!admin) throw new Error('ไม่พบบัญชีแอดมิน (DaoCha@gmail.com)');
-
   const userByNick = {};
   for (const nick of ALL_NICKS) {
     const u = await User.findOne({ email: emailOf(CODE[nick]) });
     if (!u) console.warn(`⚠ ไม่พบผู้ใช้สำหรับ "${nick}" (${emailOf(CODE[nick])})`);
     userByNick[nick] = u;
   }
+
+  const creator = userByNick['ชาคริต'];
+  if (!creator) throw new Error('ไม่พบผู้ใช้ "ชาคริต" สำหรับระบุเป็นผู้มอบหมาย');
 
   let created = 0;
   let skipped = 0;
@@ -127,7 +127,7 @@ async function run() {
       reviewers,
       startDate: start,
       deadline,
-      createdBy: admin._id,
+      createdBy: creator._id,
     });
     await task.save();
     created += 1;

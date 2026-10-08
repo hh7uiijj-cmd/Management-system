@@ -11,7 +11,8 @@
     "seed:master-task-list-exhibition": "node scripts/seedMasterTaskListExhibition.js",
     "seed:master-task-list-welfare": "node scripts/seedMasterTaskListWelfare.js",
     "seed:task-master-admin": "node scripts/seedTaskMasterAdmin.js",
-    "migrate:task-submissions": "node scripts/migrateTaskSubmissions.js"
+    "migrate:task-submissions": "node scripts/migrateTaskSubmissions.js",
+    "fix:task-master-admin-creator": "node scripts/fixTaskMasterAdminCreator.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
