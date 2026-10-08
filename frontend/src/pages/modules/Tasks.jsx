@@ -69,10 +69,28 @@ const SubmissionsCell = ({ submissions }) => {
 }
 
 const columns = [
-  { key: 'title', label: 'ชื่องาน' },
+  {
+    key: 'title',
+    label: 'ชื่องาน',
+    render: (item) => (
+      <div>
+        <p>{item.title}</p>
+        <p className="text-xs text-gray-400 mt-0.5">มอบหมายโดย {shortPersonLabel(item.createdBy)}</p>
+      </div>
+    ),
+  },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', render: (item) => shortPersonLabel(item.mainAssignee) },
-  { key: 'createdBy', label: 'ผู้มอบหมาย', render: (item) => <span className="text-xs text-gray-400">{shortPersonLabel(item.createdBy)}</span> },
+  {
+    key: 'coAssignees',
+    label: 'ผู้รับผิดชอบร่วม',
+    render: (item) =>
+      item.coAssignees?.length ? (
+        <div className="flex flex-col gap-0.5">
+          {item.coAssignees.map((c) => <span key={c._id} className="text-sm whitespace-nowrap">{shortPersonLabel(c)}</span>)}
+        </div>
+      ) : '-',
+  },
   {
     key: 'reviewers',
     label: 'ผู้อนุมัติ',
