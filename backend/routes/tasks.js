@@ -215,6 +215,9 @@ router.put('/:id/submit', auth, async (req, res) => {
       submittedAt: new Date(),
     });
     task.status = 'รอตรวจสอบ';
+    // ส่งงานใหม่แล้ว ถือว่าข้อที่เคยถูกตีกลับได้รับการแก้ไขแล้ว เคลียร์หมายเหตุเก่าทิ้ง
+    task.rejectionReason = '';
+    task.rejectedAt = null;
     await task.save();
     await task.populate(POPULATE);
 
@@ -230,7 +233,7 @@ router.put('/:id/submit', auth, async (req, res) => {
 // PUT /api/tasks/:id/approve — ผู้อนุมัติ (reviewers) หรือ admin/ประธาน/รองประธาน/หัวหน้า-เลขาฝ่ายเจ้าของงาน กดอนุมัติเพื่ออัปเดตสถานะ
 router.put('/:id/approve', auth, async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, rejectionReason } = req.body;
     if (!status || !TASK_STATUSES.includes(status)) {
       return res.status(400).json({ message: 'สถานะไม่ถูกต้อง' });
     }
@@ -251,7 +254,20 @@ router.put('/:id/approve', auth, async (req, res) => {
       return res.status(400).json({ message: 'ยังไม่มีการส่งงานสำหรับงานนี้ ไม่สามารถอนุมัติเป็น "เสร็จสิ้น" ได้' });
     }
 
+    // ตีกลับงานที่กำลังรอตรวจสอบ ต้องระบุเหตุผล ไม่ให้ตีกลับลอยๆ โดยผู้รับผิดชอบไม่รู้ว่าต้องแก้อะไร
+    if (task.status === 'รอตรวจสอบ' && status !== 'เสร็จสิ้น' && !rejectionReason?.trim()) {
+      return res.status(400).json({ message: 'กรุณาระบุเหตุผล/สิ่งที่ต้องแก้ไข ก่อนตีกลับงาน' });
+    }
+
     task.status = status;
+    // ตีกลับแก้ไข: บันทึกเหตุผลไว้ให้ผู้รับผิดชอบเห็นว่าต้องแก้อะไร / อนุมัติผ่าน: เคลียร์หมายเหตุเก่าทิ้ง
+    if (rejectionReason !== undefined) {
+      task.rejectionReason = rejectionReason;
+      task.rejectedAt = rejectionReason.trim() ? new Date() : null;
+    } else if (status === 'เสร็จสิ้น') {
+      task.rejectionReason = '';
+      task.rejectedAt = null;
+    }
     await task.save();
     await task.populate(POPULATE);
 

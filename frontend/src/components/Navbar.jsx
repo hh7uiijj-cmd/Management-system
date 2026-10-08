@@ -30,10 +30,13 @@ const Navbar = () => {
         const now = new Date()
         const isMine = (t) =>
           idOf(t.mainAssignee) === uid || (t.coAssignees || []).some((c) => idOf(c) === uid) || (t.reviewers || []).some((r) => idOf(r) === uid)
+        const isResponsibleFor = (t) =>
+          idOf(t.mainAssignee) === uid || (t.coAssignees || []).some((c) => idOf(c) === uid)
         const isMyReviewPending = (t) =>
           (t.reviewers || []).some((r) => idOf(r) === uid) && t.status === 'รอตรวจสอบ'
+        const needsMyRevision = (t) => isResponsibleFor(t) && !!t.rejectionReason?.trim()
         const isOverdue = (t) => !['เสร็จสิ้น', 'ยกเลิก'].includes(t.status) && t.deadline && new Date(t.deadline) < now
-        const count = data.filter((t) => (isMine(t) && isOverdue(t)) || isMyReviewPending(t)).length
+        const count = data.filter((t) => (isMine(t) && isOverdue(t)) || isMyReviewPending(t) || needsMyRevision(t)).length
         setAttentionCount(count)
       })
       .catch(() => {})
@@ -155,13 +158,19 @@ const Navbar = () => {
               </span>
             )}
           </button>
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xs font-semibold">
-            {initials(user?.name) || '?'}
-          </div>
-          <div className="text-right hidden sm:block">
-            <div className="text-sm font-medium text-gray-800 leading-tight">{user?.name}</div>
-            <div className="text-xs text-gray-400 leading-tight">{user?.role?.displayName}</div>
-          </div>
+          <button onClick={() => navigate('/profile')} className="flex items-center gap-3" title="โปรไฟล์ของฉัน">
+            {user?.avatar ? (
+              <img src={user.avatar} alt="" className="w-9 h-9 rounded-full object-cover border border-gray-200" />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center text-white text-xs font-semibold">
+                {initials(user?.name) || '?'}
+              </div>
+            )}
+            <div className="text-right hidden sm:block">
+              <div className="text-sm font-medium text-gray-800 leading-tight">{user?.name}</div>
+              <div className="text-xs text-gray-400 leading-tight">{user?.role?.displayName}</div>
+            </div>
+          </button>
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 bg-gray-50 hover:bg-gray-100 text-gray-600 px-3 py-2 rounded-xl text-sm transition-colors duration-200"

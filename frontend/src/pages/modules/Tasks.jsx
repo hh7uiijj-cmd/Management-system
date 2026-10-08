@@ -88,6 +88,19 @@ const columns = [
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
   { key: 'priority', label: 'ความสำคัญ', render: (item) => <StatusBadge status={item.priority} /> },
   { key: 'submissions', label: 'งานที่ส่ง', render: (item) => <SubmissionsCell submissions={item.submissions} /> },
+  {
+    key: 'rejectionReason',
+    label: 'ตีกลับแก้ไข',
+    render: (item) =>
+      item.rejectionReason?.trim() ? (
+        <div className="max-w-xs">
+          <p className="text-xs font-medium text-amber-600">ต้องแก้ไข:</p>
+          <p className="text-xs text-amber-700 whitespace-pre-wrap">{item.rejectionReason}</p>
+        </div>
+      ) : (
+        <span className="text-gray-400">-</span>
+      ),
+  },
 ]
 
 const idOf = (v) => String(v?._id || v)
@@ -102,8 +115,14 @@ const isAssignedToTask = (item, user) => {
 }
 const myPendingApproval = (item, user) => isReviewer(item, user) && item.status === 'รอตรวจสอบ'
 const isOverdue = (item) => !['เสร็จสิ้น', 'ยกเลิก'].includes(item.status) && item.deadline && new Date(item.deadline) < new Date()
+// แจ้งเตือนเฉพาะผู้รับผิดชอบหลัก/ร่วม (คนที่ต้องแก้ไขงานจริง) ไม่รวมผู้อนุมัติที่เป็นคนตีกลับเอง
+const isResponsibleFor = (item, user) => {
+  const uid = String(user?._id)
+  return idOf(item.mainAssignee) === uid || (item.coAssignees || []).some((c) => idOf(c) === uid)
+}
+const needsRevision = (item, user) => isResponsibleFor(item, user) && !!item.rejectionReason?.trim()
 const needsMyAttention = (item, user) =>
-  (isAssignedToTask(item, user) && isOverdue(item)) || myPendingApproval(item, user)
+  (isAssignedToTask(item, user) && isOverdue(item)) || myPendingApproval(item, user) || needsRevision(item, user)
 
 // ผู้รับผิดชอบหลัก/ร่วม/ผู้อนุมัติ ต้องแก้ไข (เช่น อัปเดตสถานะ) งานที่ตัวเองถูกมอบหมายได้เสมอ แม้คนละฝ่าย
 const canEditTaskItem = (item, user) => {
@@ -148,6 +167,7 @@ const Tasks = () => {
       approveGateFn={(item) => item.submissions?.length > 0}
       rejectTargetValue="กำลังดำเนินการ"
       rejectButtonLabel="ตีกลับแก้ไข"
+      rejectReasonField="rejectionReason"
       canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user) || (isDeptLead(user) && item.department === user.department)}
       submitAction={{
         label: 'ส่งงาน',

@@ -61,6 +61,16 @@ const taskMasterSchema = new mongoose.Schema({
     submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     submittedAt: { type: Date, default: Date.now },
   }],
+  // เหตุผลที่ผู้อนุมัติตีกลับให้แก้ไขล่าสุด (ว่างแปลว่าไม่มีงานค้างตีกลับ) — เคลียร์อัตโนมัติเมื่อส่งงานใหม่หรืออนุมัติผ่าน
+  rejectionReason: {
+    type: String,
+    trim: true,
+    default: '',
+  },
+  rejectedAt: {
+    type: Date,
+    default: null,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

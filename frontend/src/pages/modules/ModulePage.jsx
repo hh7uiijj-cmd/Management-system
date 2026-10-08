@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', approveGateFn, rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [], extraFilterFn, enableCardView = false }) => {
+const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', approveGateFn, rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', rejectReasonField, canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [], extraFilterFn, enableCardView = false }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -30,6 +30,10 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
   const [submittingItem, setSubmittingItem] = useState(null)
   const [submitForm, setSubmitForm] = useState({})
   const [submitting, setSubmitting] = useState(false)
+
+  const [rejectingItem, setRejectingItem] = useState(null)
+  const [rejectReason, setRejectReason] = useState('')
+  const [rejecting, setRejecting] = useState(false)
 
   const [search, setSearch] = useState('')
   const [filterValues, setFilterValues] = useState({})
@@ -185,13 +189,36 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
     }
   }
 
-  const handleApprove = async (id, status) => {
+  const handleApprove = async (id, status, extra = {}) => {
     try {
-      await api.put(`${endpoint}/${id}/${approveEndpointSuffix}`, { status })
+      await api.put(`${endpoint}/${id}/${approveEndpointSuffix}`, { status, ...extra })
       setMessage({ text: 'อัปเดตสถานะสำเร็จ', type: 'success' })
       fetchItems()
     } catch (err) {
       setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    }
+  }
+
+  const openReject = (item) => {
+    setRejectingItem(item)
+    setRejectReason('')
+    setMessage({ text: '', type: '' })
+  }
+
+  const handleRejectSubmit = async (e) => {
+    e.preventDefault()
+    if (!rejectReason.trim()) return
+    setRejecting(true)
+    setMessage({ text: '', type: '' })
+    try {
+      await api.put(`${endpoint}/${rejectingItem._id}/${approveEndpointSuffix}`, { status: rejectTargetValue, [rejectReasonField]: rejectReason })
+      setMessage({ text: 'ตีกลับงานสำเร็จ ระบบแจ้งเตือนผู้รับผิดชอบแล้ว', type: 'success' })
+      setRejectingItem(null)
+      fetchItems()
+    } catch (err) {
+      setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    } finally {
+      setRejecting(false)
     }
   }
 
@@ -275,7 +302,7 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
                 <span className="text-xs text-gray-400 italic">ยังไม่มีงานส่ง</span>
               ) : (
                 <button
-                  onClick={() => handleApprove(item._id, approveTargetValue)}
+                  onClick={() => handleApprove(item._id, approveTargetValue, rejectReasonField ? { [rejectReasonField]: '' } : {})}
                   className="text-xs px-3 py-1.5 border border-green-500 text-green-600 rounded-lg hover:bg-green-50"
                 >
                   {approveButtonLabel}
@@ -283,7 +310,7 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
               )}
               {rejectTargetValue && (
                 <button
-                  onClick={() => handleApprove(item._id, rejectTargetValue)}
+                  onClick={() => (rejectReasonField ? openReject(item) : handleApprove(item._id, rejectTargetValue))}
                   className="text-xs px-3 py-1.5 border border-amber-500 text-amber-600 rounded-lg hover:bg-amber-50"
                 >
                   {rejectButtonLabel}
@@ -515,6 +542,36 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
                       {submitting ? 'กำลังส่ง...' : 'ส่งงาน'}
                     </button>
                     <button type="button" onClick={() => setSubmittingItem(null)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                      ยกเลิก
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {rejectingItem && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-black/30" onClick={() => setRejectingItem(null)} />
+              <div className="relative card p-6 w-full max-w-md">
+                <h2 className="font-semibold text-gray-800 mb-4">{rejectButtonLabel}: {rejectingItem.title || ''}</h2>
+                <form onSubmit={handleRejectSubmit} className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">เหตุผล / สิ่งที่ต้องแก้ไข (จำเป็น)</label>
+                    <textarea
+                      className="input-field"
+                      rows={4}
+                      value={rejectReason}
+                      onChange={(e) => setRejectReason(e.target.value)}
+                      placeholder="ระบุให้ชัดเจนว่าผู้รับผิดชอบต้องแก้ไขอะไรบ้าง"
+                      required
+                    />
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <button type="submit" disabled={rejecting || !rejectReason.trim()} className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 disabled:opacity-60 text-sm">
+                      {rejecting ? 'กำลังบันทึก...' : 'ยืนยันตีกลับ'}
+                    </button>
+                    <button type="button" onClick={() => setRejectingItem(null)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 text-sm">
                       ยกเลิก
                     </button>
                   </div>
