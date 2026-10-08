@@ -474,46 +474,52 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
           )}
 
           {showForm && (
-            <div className="card p-6 mb-6">
-              <h2 className="font-semibold text-gray-800 mb-4">{editingId ? 'แก้ไขรายการ' : 'เพิ่มรายการใหม่'}</h2>
-              <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {fields.filter((f) => !f.visible || f.visible(user)).map((f) => (
-                  <div key={f.name} className={['textarea', 'multiref'].includes(f.type) ? 'md:col-span-2' : ''}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
-                    {renderFieldInput(f)}
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-black/30" onClick={() => setShowForm(false)} />
+              <div className="relative card p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+                <h2 className="font-semibold text-gray-800 mb-4">{editingId ? 'แก้ไขรายการ' : 'เพิ่มรายการใหม่'}</h2>
+                <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {fields.filter((f) => !f.visible || f.visible(user)).map((f) => (
+                    <div key={f.name} className={['textarea', 'multiref'].includes(f.type) ? 'md:col-span-2' : ''}>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
+                      {renderFieldInput(f)}
+                    </div>
+                  ))}
+                  <div className="md:col-span-2 flex gap-2 pt-2">
+                    <button type="submit" disabled={saving} className="btn-primary">
+                      {saving ? 'กำลังบันทึก...' : 'บันทึก'}
+                    </button>
+                    <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                      ยกเลิก
+                    </button>
                   </div>
-                ))}
-                <div className="md:col-span-2 flex gap-2 pt-2">
-                  <button type="submit" disabled={saving} className="btn-primary">
-                    {saving ? 'กำลังบันทึก...' : 'บันทึก'}
-                  </button>
-                  <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
-                    ยกเลิก
-                  </button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           )}
 
           {submittingItem && (
-            <div className="card p-6 mb-6">
-              <h2 className="font-semibold text-gray-800 mb-4">{submitAction.formTitle || 'ส่งงาน'}: {submittingItem.title || ''}</h2>
-              <form onSubmit={handleSubmitAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {submitAction.fields.map((f) => (
-                  <div key={f.name} className={['textarea', 'multiref'].includes(f.type) ? 'md:col-span-2' : ''}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
-                    {renderSubmitFieldInput(f)}
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="fixed inset-0 bg-black/30" onClick={() => setSubmittingItem(null)} />
+              <div className="relative card p-6 w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+                <h2 className="font-semibold text-gray-800 mb-4">{submitAction.formTitle || 'ส่งงาน'}: {submittingItem.title || ''}</h2>
+                <form onSubmit={handleSubmitAction} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {submitAction.fields.map((f) => (
+                    <div key={f.name} className={['textarea', 'multiref'].includes(f.type) ? 'md:col-span-2' : ''}>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{f.label}</label>
+                      {renderSubmitFieldInput(f)}
+                    </div>
+                  ))}
+                  <div className="md:col-span-2 flex gap-2 pt-2">
+                    <button type="submit" disabled={submitting} className="btn-primary">
+                      {submitting ? 'กำลังส่ง...' : 'ส่งงาน'}
+                    </button>
+                    <button type="button" onClick={() => setSubmittingItem(null)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
+                      ยกเลิก
+                    </button>
                   </div>
-                ))}
-                <div className="md:col-span-2 flex gap-2 pt-2">
-                  <button type="submit" disabled={submitting} className="btn-primary">
-                    {submitting ? 'กำลังส่ง...' : 'ส่งงาน'}
-                  </button>
-                  <button type="button" onClick={() => setSubmittingItem(null)} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50">
-                    ยกเลิก
-                  </button>
-                </div>
-              </form>
+                </form>
+              </div>
             </div>
           )}
 
