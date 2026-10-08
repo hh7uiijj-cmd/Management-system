@@ -17,7 +17,7 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [], extraFilterFn, enableCardView = false }) => {
+const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', approveGateFn, rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [], extraFilterFn, enableCardView = false }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -271,12 +271,16 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
         approveMode === 'button' ? (
           item[approveField] === approveTriggerValue && (
             <>
-              <button
-                onClick={() => handleApprove(item._id, approveTargetValue)}
-                className="text-xs px-3 py-1.5 border border-green-500 text-green-600 rounded-lg hover:bg-green-50"
-              >
-                {approveButtonLabel}
-              </button>
+              {approveGateFn && !approveGateFn(item) ? (
+                <span className="text-xs text-gray-400 italic">ยังไม่มีงานส่ง</span>
+              ) : (
+                <button
+                  onClick={() => handleApprove(item._id, approveTargetValue)}
+                  className="text-xs px-3 py-1.5 border border-green-500 text-green-600 rounded-lg hover:bg-green-50"
+                >
+                  {approveButtonLabel}
+                </button>
+              )}
               {rejectTargetValue && (
                 <button
                   onClick={() => handleApprove(item._id, rejectTargetValue)}
@@ -413,16 +417,25 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
                   return (
                     <div key={f.key}>
                       <label className="block text-xs font-medium text-gray-500 mb-1">{f.label}</label>
-                      <select
-                        className="input-field"
-                        value={filterValues[f.key] || ''}
-                        onChange={(e) => setFilterValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
-                      >
-                        <option value="">ทั้งหมด</option>
-                        {opts.map((opt) => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
-                        ))}
-                      </select>
+                      {f.searchable ? (
+                        <SearchSelect
+                          options={opts}
+                          value={filterValues[f.key] || ''}
+                          onChange={(v) => setFilterValues((prev) => ({ ...prev, [f.key]: v }))}
+                          placeholder="ทั้งหมด"
+                        />
+                      ) : (
+                        <select
+                          className="input-field"
+                          value={filterValues[f.key] || ''}
+                          onChange={(e) => setFilterValues((prev) => ({ ...prev, [f.key]: e.target.value }))}
+                        >
+                          <option value="">ทั้งหมด</option>
+                          {opts.map((opt) => (
+                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          ))}
+                        </select>
+                      )}
                     </div>
                   )
                 })}

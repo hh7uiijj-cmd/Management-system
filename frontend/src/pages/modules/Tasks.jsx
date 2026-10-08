@@ -141,6 +141,7 @@ const Tasks = () => {
       approveTriggerValue="รอตรวจสอบ"
       approveTargetValue="เสร็จสิ้น"
       approveButtonLabel="อนุมัติงาน"
+      approveGateFn={(item) => item.submissions?.length > 0}
       rejectTargetValue="กำลังดำเนินการ"
       rejectButtonLabel="ตีกลับแก้ไข"
       canApproveItem={(item, user) => isTopTier(user) || isReviewer(item, user)}
@@ -164,7 +165,8 @@ const Tasks = () => {
         { key: 'department', label: 'ฝ่าย', options: DEPARTMENTS },
         { key: 'status', label: 'สถานะ', options: TASK_STATUSES },
         { key: 'priority', label: 'ความสำคัญ', options: TASK_PRIORITIES },
-        { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+        { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', searchable: true, optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
+        { key: 'coAssignees', label: 'ผู้รับผิดชอบร่วม', searchable: true, optionsEndpoint: '/api/users/directory?all=true', mapOption: (u) => ({ value: u._id, label: userLabel(u) }) },
       ]}
       sorts={[
         { key: 'deadline', label: 'กำหนดส่ง', defaultDir: 'asc' },

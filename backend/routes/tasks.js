@@ -246,6 +246,11 @@ router.put('/:id/approve', auth, async (req, res) => {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์อนุมัติงานนี้' });
     }
 
+    // ป้องกันอนุมัติงาน "เสร็จสิ้น" ทั้งที่ยังไม่มีการส่งงานจริง (เช่น สถานะถูกตั้งเป็น "รอตรวจสอบ" ทางอื่นโดยไม่ได้กดส่งงาน)
+    if (status === 'เสร็จสิ้น' && !(task.submissions || []).length) {
+      return res.status(400).json({ message: 'ยังไม่มีการส่งงานสำหรับงานนี้ ไม่สามารถอนุมัติเป็น "เสร็จสิ้น" ได้' });
+    }
+
     task.status = status;
     await task.save();
     await task.populate(POPULATE);
