@@ -6,7 +6,7 @@ const TaskMaster = require('../models/TaskMaster');
 // แก้ไข "ผู้มอบหมาย" (createdBy) ของงาน Task Master ฝ่ายธุรการฯ ที่นำเข้าไปก่อนหน้านี้
 // จากเดิมที่ตั้งเป็นบัญชีแอดมิน ให้เปลี่ยนเป็นชาคริต (020) ตามที่ควรจะเป็น รันซ้ำได้ปลอดภัย
 const DEPARTMENT = 'ฝ่ายธุรการและงานประเมิน';
-const CHAKRIT_EMAIL = 'u671101155320@mail.dusit.ac.th';
+const CHAKRIT_EMAIL = 'u6711011553020@mail.dusit.ac.th';
 
 async function run() {
   await mongoose.connect(process.env.MONGODB_URI);
