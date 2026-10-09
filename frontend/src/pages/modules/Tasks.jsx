@@ -3,10 +3,38 @@ import { useSearchParams } from 'react-router-dom'
 import ModulePage from './ModulePage'
 import DepartmentBadge from '../../components/DepartmentBadge'
 import StatusBadge from '../../components/StatusBadge'
+import { useAuth } from '../../context/AuthContext'
 import { DEPARTMENTS, TASK_STATUSES, TASK_PRIORITIES, toOptions, shortPersonLabel } from '../../constants'
 
 const isTopTier = (user) => ['admin', 'president', 'vice_president'].includes(user?.role?.name)
 const isDeptLead = (user) => ['head', 'secretary'].includes(user?.role?.name)
+const idOf = (v) => String(v?._id || v)
+
+// ไฮไลท์ชื่อของผู้ใช้ที่ล็อกอินอยู่ ให้เห็นเด่นทันทีเวลากวาดตาดูตาราง
+const PersonChip = ({ person }) => {
+  const { user } = useAuth()
+  if (!person) return '-'
+  const mine = idOf(person) === String(user?._id)
+  return (
+    <span className={mine ? 'inline-block px-1.5 py-0.5 -mx-1.5 bg-indigo-100 text-indigo-700 font-semibold rounded' : ''}>
+      {shortPersonLabel(person)}
+    </span>
+  )
+}
+
+// สัญลักษณ์เตือนที่ชื่องาน เมื่องานนี้ต้องให้ผู้ใช้ที่ล็อกอินอยู่ติดตาม (ล่าช้า/รอคุณอนุมัติ/ถูกตีกลับให้แก้ไข)
+const AttentionMark = ({ item }) => {
+  const { user } = useAuth()
+  if (!needsMyAttention(item, user)) return null
+  return (
+    <span
+      title="ต้องติดตาม: ล่าช้า, รอคุณอนุมัติ หรือถูกตีกลับให้แก้ไข"
+      className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex-shrink-0"
+    >
+      !
+    </span>
+  )
+}
 
 const userLabel = (u) => `${u.name}${u.nickname ? ` (${u.nickname})` : ''} · ${u.department || '-'}`
 
@@ -51,7 +79,7 @@ const SubmissionsCell = ({ submissions }) => {
             </div>
             {submissions.map((s, i) => (
               <div key={i} className="text-xs border-b border-gray-50 last:border-0 pb-2 last:pb-0">
-                <p className="font-medium text-gray-700">{shortPersonLabel(s.submittedBy)}</p>
+                <p className="font-medium text-gray-700"><PersonChip person={s.submittedBy} /></p>
                 <p className="text-gray-400">{formatDateTime(s.submittedAt)}</p>
                 {s.link && (
                   <a href={s.link} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-700 underline block truncate">
@@ -74,20 +102,23 @@ const columns = [
     label: 'ชื่องาน',
     render: (item) => (
       <div>
-        <p>{item.title}</p>
-        <p className="text-xs text-gray-400 mt-0.5">มอบหมายโดย {shortPersonLabel(item.createdBy)}</p>
+        <p className="flex items-center gap-1.5">
+          <span>{item.title}</span>
+          <AttentionMark item={item} />
+        </p>
+        <p className="text-xs text-gray-400 mt-0.5">มอบหมายโดย <PersonChip person={item.createdBy} /></p>
       </div>
     ),
   },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
-  { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', render: (item) => shortPersonLabel(item.mainAssignee) },
+  { key: 'mainAssignee', label: 'ผู้รับผิดชอบหลัก', render: (item) => <PersonChip person={item.mainAssignee} /> },
   {
     key: 'coAssignees',
     label: 'ผู้รับผิดชอบร่วม',
     render: (item) =>
       item.coAssignees?.length ? (
         <div className="flex flex-col gap-0.5">
-          {item.coAssignees.map((c) => <span key={c._id} className="text-sm whitespace-nowrap">{shortPersonLabel(c)}</span>)}
+          {item.coAssignees.map((c) => <span key={c._id} className="text-sm whitespace-nowrap"><PersonChip person={c} /></span>)}
         </div>
       ) : '-',
   },
@@ -97,7 +128,7 @@ const columns = [
     render: (item) =>
       item.reviewers?.length ? (
         <div className="flex flex-col gap-0.5">
-          {item.reviewers.map((r) => <span key={r._id} className="text-sm whitespace-nowrap">{shortPersonLabel(r)}</span>)}
+          {item.reviewers.map((r) => <span key={r._id} className="text-sm whitespace-nowrap"><PersonChip person={r} /></span>)}
         </div>
       ) : '-',
   },
@@ -121,7 +152,6 @@ const columns = [
   },
 ]
 
-const idOf = (v) => String(v?._id || v)
 const isReviewer = (item, user) => (item.reviewers || []).some((r) => idOf(r) === String(user?._id))
 const isAssignedToTask = (item, user) => {
   const uid = String(user?._id)
