@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { DndContext, closestCorners, PointerSensor, useSensor, useSensors, useDraggable, useDroppable } from '@dnd-kit/core'
 import Navbar from '../../components/Navbar'
 import Sidebar from '../../components/Sidebar'
 import SearchMultiSelect from '../../components/SearchMultiSelect'
@@ -17,7 +18,44 @@ const emptyFromFields = (fields) => {
 
 const getByPath = (obj, path) => path.split('.').reduce((v, k) => (v == null ? v : v[k]), obj)
 
-const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', approveGateFn, rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', rejectReasonField, canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [], extraFilterFn, enableCardView = false }) => {
+// การ์ดลากได้ในมุมมองบอร์ด (Kanban) — ลากได้เฉพาะตอนที่ไม่ได้ disabled (เช่น ไม่มีสิทธิ์แก้ไขรายการนั้น)
+const KanbanCard = ({ id, disabled, onClick, children }) => {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id, disabled })
+  const style = transform
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: isDragging ? 50 : 'auto', opacity: isDragging ? 0.5 : 1, position: 'relative' }
+    : undefined
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      onClick={onClick}
+      className={`card p-3 text-sm shadow-sm hover:shadow-md transition-shadow ${disabled ? 'cursor-default opacity-80' : 'cursor-grab active:cursor-grabbing'}`}
+    >
+      {children}
+    </div>
+  )
+}
+
+// คอลัมน์บอร์ด Kanban หนึ่งคอลัมน์ต่อหนึ่งค่าสถานะ — ไฮไลท์ตอนลากการ์ดมาวางเหนือคอลัมน์
+const KanbanColumn = ({ id, label, count, children }) => {
+  const { setNodeRef, isOver } = useDroppable({ id })
+  return (
+    <div
+      ref={setNodeRef}
+      className={`flex-shrink-0 w-72 rounded-xl p-3 border transition-colors ${isOver ? 'bg-indigo-50 border-indigo-300' : 'bg-gray-50 border-gray-100'}`}
+    >
+      <div className="flex items-center justify-between mb-3 px-1">
+        <h3 className="text-sm font-semibold text-gray-700">{label}</h3>
+        <span className="text-xs text-gray-400 bg-white border border-gray-200 rounded-full px-2 py-0.5">{count}</span>
+      </div>
+      <div className="space-y-2 min-h-[48px]">{children}</div>
+    </div>
+  )
+}
+
+const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForNonTopTier = true, endpoint, fields, columns, ownerField = 'createdBy', canApprove, approveField, approveOptions, approveEndpointSuffix = 'approve', canApproveItem, approveMode = 'select', approveTriggerValue, approveTargetValue, approveButtonLabel = 'อนุมัติ', approveGateFn, rejectTargetValue, rejectButtonLabel = 'ตีกลับแก้ไข', rejectReasonField, canEditItemFn, canDeleteItemFn, canCreate: canCreateProp = true, submitAction, allowEdit = true, searchKeys = [], filters = [], sorts = [], extraFilterFn, enableCardView = false, enableKanban = false, kanbanColumns = [], kanbanReadOnlyStatuses = [], renderKanbanCard }) => {
   const { user } = useAuth()
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -222,6 +260,71 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
     }
   }
 
+  // ลากการ์ดเปลี่ยนคอลัมน์ในมุมมองบอร์ด = เปลี่ยนสถานะ แต่ยังบังคับใช้กฎการอนุมัติ/ตีกลับเดิมทั้งหมด
+  // (ไม่เปิดช่องให้ลัดขั้นตอน เช่น ลากข้ามไป "เสร็จสิ้น" ตรงๆ โดยไม่ผ่านการส่งงาน/อนุมัติ)
+  const kanbanSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 8 } }))
+
+  const handleQuickStatusChange = async (id, value) => {
+    try {
+      await api.put(`${endpoint}/${id}`, { [approveField]: value })
+      fetchItems()
+    } catch (err) {
+      setMessage({ text: err.response?.data?.message || 'เกิดข้อผิดพลาด', type: 'error' })
+    }
+  }
+
+  const handleKanbanDragEnd = ({ active, over }) => {
+    if (!over) return
+    const targetStatus = over.id
+    const item = items.find((i) => i._id === active.id)
+    if (!item) return
+    const current = item[approveField]
+    if (current === targetStatus) return
+
+    if (!canEditItem(item)) {
+      setMessage({ text: 'คุณไม่มีสิทธิ์แก้ไขงานนี้', type: 'error' })
+      return
+    }
+    if (kanbanReadOnlyStatuses.includes(targetStatus)) {
+      setMessage({ text: `สถานะ "${targetStatus}" ระบบจัดการให้อัตโนมัติ ไม่สามารถลากเข้าได้`, type: 'error' })
+      return
+    }
+
+    const approverOk = canApprove && (canApproveItem ? canApproveItem(item, user) : (isTopTier || isDeptLead))
+
+    if (canApprove && targetStatus === approveTargetValue) {
+      if (current !== approveTriggerValue) {
+        setMessage({ text: `ต้องอยู่ในสถานะ "${approveTriggerValue}" ก่อน ถึงจะเปลี่ยนเป็น "${approveTargetValue}" ได้`, type: 'error' })
+        return
+      }
+      if (!approverOk) {
+        setMessage({ text: 'คุณไม่มีสิทธิ์อนุมัติงานนี้', type: 'error' })
+        return
+      }
+      if (approveGateFn && !approveGateFn(item)) {
+        setMessage({ text: 'ยังไม่มีงานส่งสำหรับงานนี้ ไม่สามารถอนุมัติได้', type: 'error' })
+        return
+      }
+      handleApprove(item._id, approveTargetValue, rejectReasonField ? { [rejectReasonField]: '' } : {})
+      return
+    }
+
+    if (canApprove && rejectTargetValue && targetStatus === rejectTargetValue && current === approveTriggerValue) {
+      if (!approverOk) {
+        setMessage({ text: 'คุณไม่มีสิทธิ์ตีกลับงานนี้', type: 'error' })
+        return
+      }
+      if (rejectReasonField) {
+        openReject(item)
+        return
+      }
+      handleApprove(item._id, rejectTargetValue)
+      return
+    }
+
+    handleQuickStatusChange(item._id, targetStatus)
+  }
+
   const renderInput = (f, values, onChange) => {
     const options = f.optionsEndpoint ? (dynamicOptions[f.name] || []) : (f.options || [])
     if (f.type === 'select' || f.type === 'ref') {
@@ -407,6 +510,15 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
                   >
                     ▦ การ์ด
                   </button>
+                  {enableKanban && (
+                    <button
+                      onClick={() => setViewMode('kanban')}
+                      className={`px-3 py-2 border-l border-gray-300 ${viewMode === 'kanban' ? 'bg-indigo-500 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+                      title="มุมมองบอร์ด (ลากเปลี่ยนสถานะได้)"
+                    >
+                      🗂 บอร์ด
+                    </button>
+                  )}
                 </div>
               )}
               <button onClick={fetchItems} className="px-4 py-2 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 text-sm">
@@ -613,6 +725,29 @@ const ModulePage = ({ title, subtitle, showDeptScopeNote = false, deptScopedForN
                 ))}
               </div>
             )
+          ) : enableKanban && viewMode === 'kanban' ? (
+            <DndContext sensors={kanbanSensors} collisionDetection={closestCorners} onDragEnd={handleKanbanDragEnd}>
+              <div className="flex gap-4 overflow-x-auto pb-2">
+                {kanbanColumns.map((status) => {
+                  const colItems = visibleItems.filter((item) => item[approveField] === status)
+                  return (
+                    <KanbanColumn key={status} id={status} label={status} count={colItems.length}>
+                      {colItems.map((item) => (
+                        <KanbanCard
+                          key={item._id}
+                          id={item._id}
+                          disabled={!canEditItem(item)}
+                          onClick={() => canEditItem(item) && openEdit(item)}
+                        >
+                          {renderKanbanCard ? renderKanbanCard(item) : (item.title ?? item[columns[0]?.key])}
+                        </KanbanCard>
+                      ))}
+                      {colItems.length === 0 && <p className="text-xs text-gray-300 text-center py-4">ไม่มีงาน</p>}
+                    </KanbanColumn>
+                  )
+                })}
+              </div>
+            </DndContext>
           ) : (
             <div className="card overflow-hidden">
               <div className="overflow-x-auto">

@@ -36,6 +36,24 @@ const AttentionMark = ({ item }) => {
   )
 }
 
+// เนื้อหาการ์ดในมุมมองบอร์ด (Kanban) — กระชับกว่าการ์ดในมุมมองการ์ดปกติ เพราะต้องวางเรียงในคอลัมน์แคบๆ
+const KanbanCardContent = ({ item }) => (
+  <div className="space-y-1.5">
+    <p className="font-medium text-gray-800 flex items-start gap-1.5">
+      <span>{item.title}</span>
+      <AttentionMark item={item} />
+    </p>
+    <p className="text-xs text-gray-500"><PersonChip person={item.mainAssignee} /></p>
+    <div className="flex items-center justify-between text-xs text-gray-400">
+      <span>{item.deadline ? new Date(item.deadline).toLocaleDateString('th-TH') : '-'}</span>
+      <StatusBadge status={item.priority} />
+    </div>
+    {item.rejectionReason?.trim() && (
+      <p className="text-xs text-amber-600 bg-amber-50 rounded px-1.5 py-1 line-clamp-2">⚠ ต้องแก้ไข: {item.rejectionReason}</p>
+    )}
+  </div>
+)
+
 const userLabel = (u) => `${u.name}${u.nickname ? ` (${u.nickname})` : ''} · ${u.department || '-'}`
 
 // หัวหน้า/เลขา (และระดับบริหาร) เลือกผู้รับผิดชอบร่วมได้ทุกฝ่าย ส่วนสมาชิกทั่วไปเลือกได้เฉพาะฝ่ายตัวเอง
@@ -205,6 +223,10 @@ const Tasks = () => {
       canEditItemFn={canEditTaskItem}
       canDeleteItemFn={canDeleteTaskItem}
       enableCardView
+      enableKanban
+      kanbanColumns={TASK_STATUSES}
+      kanbanReadOnlyStatuses={['ล่าช้า']}
+      renderKanbanCard={(item) => <KanbanCardContent item={item} />}
       extraFilterFn={attentionOnly ? needsMyAttention : undefined}
       canApprove
       approveField="status"
