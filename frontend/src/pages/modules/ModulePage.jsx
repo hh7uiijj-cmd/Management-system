@@ -31,8 +31,16 @@ const KanbanCard = ({ id, disabled, onClick, children }) => {
       {...listeners}
       {...attributes}
       onClick={onClick}
-      className={`card p-3 text-sm shadow-sm hover:shadow-md transition-shadow ${disabled ? 'cursor-default opacity-80' : 'cursor-grab active:cursor-grabbing'}`}
+      className={`relative card p-3 text-sm shadow-sm hover:shadow-md transition-shadow ${disabled ? 'cursor-default opacity-80' : 'cursor-grab active:cursor-grabbing'}`}
     >
+      {disabled && (
+        <span
+          title="คุณไม่มีสิทธิ์แก้ไขรายการนี้ (ดูได้อย่างเดียว) จึงลากสลับสถานะไม่ได้"
+          className="absolute top-2 right-2 text-[10px] text-gray-400 bg-gray-50 border border-gray-200 rounded px-1.5 py-0.5"
+        >
+          🔒 ดูอย่างเดียว
+        </span>
+      )}
       {children}
     </div>
   )

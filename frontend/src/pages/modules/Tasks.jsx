@@ -43,6 +43,7 @@ const KanbanCardContent = ({ item }) => (
       <span>{item.title}</span>
       <AttentionMark item={item} />
     </p>
+    <DepartmentBadge department={item.department} />
     <p className="text-xs text-gray-500"><PersonChip person={item.mainAssignee} /></p>
     <div className="flex items-center justify-between text-xs text-gray-400">
       <span>{item.deadline ? new Date(item.deadline).toLocaleDateString('th-TH') : '-'}</span>
