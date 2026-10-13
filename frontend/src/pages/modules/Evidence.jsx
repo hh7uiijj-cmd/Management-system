@@ -15,6 +15,23 @@ const columns = [
   { key: 'relatedTask', label: 'งานที่เกี่ยวข้อง', render: (item) => item.relatedTask?.title || '-' },
   { key: 'department', label: 'ฝ่าย', render: (item) => <DepartmentBadge department={item.department} /> },
   { key: 'description', label: 'รายละเอียด' },
+  {
+    key: 'fileUrl',
+    label: 'ไฟล์หลักฐาน',
+    render: (item) =>
+      item.fileUrl?.trim() ? (
+        <a
+          href={item.fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs px-2.5 py-1 border border-indigo-300 text-indigo-600 rounded-lg hover:bg-indigo-50 whitespace-nowrap inline-block"
+        >
+          เปิดไฟล์ ↗
+        </a>
+      ) : (
+        <span className="text-gray-400">-</span>
+      ),
+  },
   { key: 'uploadedBy', label: 'ผู้อัปโหลด', render: (item) => item.uploadedBy?.name || '-' },
 ]
 
