@@ -56,8 +56,13 @@ router.put('/:id', auth, moduleAccess('edit'), async (req, res) => {
       return res.status(403).json({ message: 'คุณไม่มีสิทธิ์แก้ไขรายการนี้' });
     }
 
-    const { title, impactLevel, likelihoodLevel, status, mitigation, owner, relatedTask } = req.body;
+    const { title, type, department, impactLevel, likelihoodLevel, status, mitigation, owner, relatedTask } = req.body;
     if (title) risk.title = title;
+    if (type) risk.type = type;
+    // ย้ายข้ามฝ่ายได้เฉพาะ admin/ประธาน/รองประธาน ให้ตรงกับที่ฟอร์ม frontend ซ่อนช่องนี้ไว้สำหรับ role อื่น
+    const role = req.user.role?.name;
+    const isTopTier = role === 'admin' || ['president', 'vice_president'].includes(role);
+    if (department && isTopTier) risk.department = department;
     if (impactLevel) risk.impactLevel = impactLevel;
     if (likelihoodLevel) risk.likelihoodLevel = likelihoodLevel;
     if (status) risk.status = status;
