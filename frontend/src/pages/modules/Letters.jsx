@@ -48,6 +48,7 @@ const Letters = () => (
   <ModulePage
     title="หนังสือราชการ (Letter Tracker)"
     showDeptScopeNote
+    deptScopedForNonTopTier={false}
     endpoint="/api/letters"
     fields={fields}
     columns={columns}

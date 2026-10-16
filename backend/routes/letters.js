@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const LetterTracker = require('../models/LetterTracker');
 const auth = require('../middleware/auth');
-const { moduleAccess, departmentFilter, canAccessDoc } = require('../middleware/moduleAccess');
+const { moduleAccess, canAccessDoc } = require('../middleware/moduleAccess');
 const { logAudit } = require('../utils/audit');
 
 const POPULATE = [
@@ -10,9 +10,11 @@ const POPULATE = [
   { path: 'createdBy', select: 'name email' },
 ];
 
+// GET /api/letters — ทุกฝ่ายดูรายการหนังสือราชการได้หมด (ไม่กรองตามฝ่าย)
+// สิทธิ์ create/edit/delete ยังจำกัดตามฝ่ายตามปกติ
 router.get('/', auth, moduleAccess('view'), async (req, res) => {
   try {
-    const letters = await LetterTracker.find(departmentFilter(req)).populate(POPULATE).sort({ createdAt: -1 });
+    const letters = await LetterTracker.find({}).populate(POPULATE).sort({ createdAt: -1 });
     res.json(letters);
   } catch (error) {
     console.error('Get letters error:', error);
