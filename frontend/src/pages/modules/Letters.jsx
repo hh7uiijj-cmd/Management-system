@@ -25,6 +25,23 @@ const columns = [
   { key: 'status', label: 'สถานะ', render: (item) => <StatusBadge status={item.status} /> },
   { key: 'dueDate', label: 'กำหนดตอบกลับ', render: (item) => item.dueDate ? new Date(item.dueDate).toLocaleDateString('th-TH') : '-' },
   { key: 'createdBy', label: 'ผู้สร้างรายการ', render: (item) => item.createdBy?.name || '-' },
+  {
+    key: 'fileUrl',
+    label: 'ไฟล์หนังสือ',
+    render: (item) =>
+      item.fileUrl?.trim() ? (
+        <a
+          href={item.fileUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-xs px-2.5 py-1 border border-indigo-300 text-indigo-600 rounded-lg hover:bg-indigo-50 whitespace-nowrap inline-block"
+        >
+          เปิดไฟล์ ↗
+        </a>
+      ) : (
+        <span className="text-gray-400">-</span>
+      ),
+  },
 ]
 
 const Letters = () => (
