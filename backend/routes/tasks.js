@@ -64,9 +64,11 @@ const startOfTodayUTC = () => {
   d.setUTCHours(0, 0, 0, 0);
   return d;
 };
+// ไม่แตะงานที่ "รอตรวจสอบ" อยู่แล้ว — ผู้รับผิดชอบส่งงานไปก่อนเกินกำหนดแล้ว กำลังรอผู้อนุมัติตรวจ
+// ไม่ควรถูกตีเป็น "ล่าช้า" ทับจนปุ่มอนุมัติหายไป (เคยเป็นบั๊ก: ส่งงานไว้แล้วแต่ deadline ผ่านไปโดยยังไม่มีคนอนุมัติ สถานะเงียบๆ กลายเป็นล่าช้า)
 const autoMarkOverdue = async (filter = {}) => {
   await TaskMaster.updateMany(
-    { ...filter, deadline: { $lt: startOfTodayUTC() }, status: { $nin: ['เสร็จสิ้น', 'ยกเลิก', 'ล่าช้า'] } },
+    { ...filter, deadline: { $lt: startOfTodayUTC() }, status: { $nin: ['เสร็จสิ้น', 'ยกเลิก', 'ล่าช้า', 'รอตรวจสอบ'] } },
     { $set: { status: 'ล่าช้า' } }
   );
 };
