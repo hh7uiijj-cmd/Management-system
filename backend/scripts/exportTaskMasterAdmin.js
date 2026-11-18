@@ -2,6 +2,8 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
+require('../models/User');
+require('../models/Member');
 const TaskMaster = require('../models/TaskMaster');
 
 // ส่งออกข้อมูล Task Master ปัจจุบันของฝ่ายธุรการและงานประเมินเป็นไฟล์ JSON
